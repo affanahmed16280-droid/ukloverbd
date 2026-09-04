@@ -12,17 +12,16 @@ export default function ProductGrid() {
         {/* Section header */}
         <div className="mb-12 border-b pb-6" style={{ borderColor: "var(--cream-darker)" }}>
           <h2
-            className="text-3xl sm:text-4xl font-bold"
+            className="text-4xl sm:text-5xl font-black tracking-tighter"
             style={{
-              fontFamily: "var(--font-serif)",
+              fontFamily: "var(--font-sans)",
               color: "var(--plum)",
-              fontWeight: 700,
             }}
           >
             Made for your shelf.
           </h2>
           <p
-            className="mt-2 text-sm"
+            className="mt-3 text-base font-medium"
             style={{ color: "var(--text-muted)", fontFamily: "var(--font-sans)" }}
           >
             Every product here is real, authentic, and hand-picked from UK stores.

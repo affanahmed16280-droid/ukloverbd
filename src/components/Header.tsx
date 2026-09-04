@@ -34,13 +34,13 @@ export default function Header() {
           {/* Brand */}
           <Link href="/" className="flex-shrink-0">
             <div
-              className="text-2xl font-bold leading-none tracking-tight"
-              style={{ fontFamily: "var(--font-serif)", color: "var(--plum)" }}
+              className="text-2xl font-black leading-none tracking-tighter"
+              style={{ fontFamily: "var(--font-sans)", color: "var(--plum)" }}
             >
               UK Brand Lover
             </div>
             <div
-              className="text-[10px] font-semibold tracking-[0.25em] uppercase mt-1"
+              className="text-[9px] font-bold tracking-[0.3em] uppercase mt-1"
               style={{ color: "var(--gold)", fontFamily: "var(--font-sans)" }}
             >
               London to Dhaka

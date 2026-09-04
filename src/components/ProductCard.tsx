@@ -144,23 +144,23 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps & {
         <div>
           {/* Brand */}
           <p
-            className="text-[11px] font-medium mb-1 tracking-wide uppercase"
+            className="text-[11px] font-bold mb-1 tracking-wider uppercase"
             style={{ color: "var(--text-muted)" }}
           >
             {product.brand}
           </p>
 
-          {/* Product name — serif */}
+          {/* Product name — sans-serif block */}
           <h3
-            className="text-[17px] font-bold leading-[1.2] mb-1.5 line-clamp-2"
-            style={{ fontFamily: "var(--font-serif)", color: "var(--plum)", fontWeight: 600 }}
+            className="text-lg font-black leading-tight mb-1.5 line-clamp-2 tracking-tight"
+            style={{ fontFamily: "var(--font-sans)", color: "var(--plum)" }}
           >
             {product.name}
           </h3>
 
           {/* Variant */}
           <p
-            className="text-[11px] mb-3"
+            className="text-[11px] mb-3 font-semibold"
             style={{ color: "var(--text-muted)" }}
           >
             {product.variant}

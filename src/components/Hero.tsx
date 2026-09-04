@@ -29,10 +29,10 @@ export default function Hero() {
         <div className="flex flex-col lg:flex-row justify-between items-center gap-16 lg:gap-24">
 
           {/* Left Content */}
-          <div className="flex-1 max-w-2xl">
+          <div className="flex-1 max-w-3xl">
             {/* Eyebrow tag */}
             <div
-              className="flex items-center gap-2 mb-8 text-[11px] font-semibold tracking-[0.2em] uppercase"
+              className="flex items-center gap-2 mb-6 text-[10px] font-bold tracking-[0.25em] uppercase"
               style={{ color: "var(--gold)", fontFamily: "var(--font-sans)" }}
             >
               GENUINELY SOURCED
@@ -42,33 +42,34 @@ export default function Hero() {
 
             {/* Headline */}
             <h1
-              className="text-5xl sm:text-6xl lg:text-[5rem] xl:text-[5.5rem] leading-[1.05] mb-8"
+              className="text-6xl sm:text-7xl lg:text-[6.5rem] xl:text-[7.5rem] leading-[0.95] mb-8 font-black tracking-tighter"
               style={{
-                fontFamily: "var(--font-serif)",
+                fontFamily: "var(--font-sans)",
                 color: "var(--plum)",
-                fontWeight: 700,
               }}
             >
-              British shelf staples,{" "}
-              <br className="hidden sm:block" />
-              <em
-                className="not-italic inline-block mt-2"
-                style={{
-                  color: "var(--gold)",
-                  fontStyle: "italic",
-                  fontFamily: "var(--font-serif)",
-                }}
-              >
-                flown in
-              </em>{" "}
-              — not
-              <br />
-              knocked off.
+              <span className="block mb-2">British shelf</span>
+              <span className="block mb-2">staples,</span>
+              <span className="block mb-2">
+                <em
+                  className="inline-block font-normal pr-4"
+                  style={{
+                    color: "var(--gold)",
+                    fontStyle: "italic",
+                    fontFamily: "var(--font-serif)",
+                    letterSpacing: "normal"
+                  }}
+                >
+                  flown in
+                </em>
+                <span className="tracking-tighter">— not</span>
+              </span>
+              <span className="block">knocked off.</span>
             </h1>
 
             {/* Description */}
             <p
-              className="text-base sm:text-lg leading-relaxed mb-10 max-w-md"
+              className="text-base sm:text-lg leading-relaxed mb-10 max-w-md font-medium"
               style={{ color: "var(--text-body)", fontFamily: "var(--font-sans)" }}
             >
               Authentic beauty and personal care, picked from trusted stores like{" "}
@@ -78,31 +79,29 @@ export default function Hero() {
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-wrap items-center gap-4 mb-12">
+            <div className="flex flex-wrap items-center gap-4 mb-10">
               <Link
                 href="#products"
-                className="inline-flex items-center gap-2 text-sm font-semibold px-8 py-4 rounded-full transition-all hover:opacity-80"
+                className="inline-flex items-center gap-2 text-xs font-black px-8 py-3.5 rounded-full transition-all hover:opacity-80 uppercase tracking-widest"
                 style={{
                   backgroundColor: "var(--plum)",
                   color: "white",
                   fontFamily: "var(--font-sans)",
-                  letterSpacing: "0.05em",
                 }}
               >
                 SHOP COLLECTION
-                <ArrowRight size={16} />
+                <ArrowRight size={16} strokeWidth={2.5} />
               </Link>
 
               <a
                 href="https://facebook.com/ukloverbangla"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm font-semibold px-8 py-4 rounded-full border transition-all hover:opacity-70"
+                className="inline-flex items-center gap-2 text-xs font-black px-8 py-3.5 rounded-full border transition-all hover:opacity-70 uppercase tracking-widest"
                 style={{
-                  borderColor: "var(--cream-darker)",
+                  borderColor: "var(--plum)",
                   color: "var(--plum)",
                   fontFamily: "var(--font-sans)",
-                  letterSpacing: "0.05em",
                   backgroundColor: "transparent",
                 }}
               >
@@ -111,26 +110,26 @@ export default function Hero() {
             </div>
 
             {/* Trust badge */}
-            <div className="flex items-center gap-4 mt-8">
+            <div className="flex items-center gap-4 mt-6">
               <div
-                className="w-12 h-12 rounded-full border border-gray-300 flex items-center justify-center flex-shrink-0"
+                className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center flex-shrink-0"
               >
                 <span
-                  className="text-xs font-bold"
-                  style={{ color: "var(--plum)", fontFamily: "var(--font-serif)" }}
+                  className="text-xs font-black"
+                  style={{ color: "var(--plum)", fontFamily: "var(--font-sans)" }}
                 >
                   UK
                 </span>
               </div>
               <div>
                 <p
-                  className="text-sm font-medium leading-tight italic"
+                  className="text-xs font-semibold leading-tight italic"
                   style={{ color: "var(--plum)", fontFamily: "var(--font-serif)" }}
                 >
                   Personal imports,
                 </p>
                 <p
-                  className="text-sm leading-tight italic"
+                  className="text-xs leading-tight italic"
                   style={{ color: "var(--text-muted)", fontFamily: "var(--font-serif)" }}
                 >
                   properly verified
@@ -218,21 +217,21 @@ export default function Hero() {
               {/* Product info (bottom left) */}
               <div className="absolute bottom-8 left-8 z-10">
                 <p
-                  className="text-[11px] font-medium mb-1.5"
+                  className="text-[11px] font-bold tracking-wide uppercase mb-1.5"
                   style={{ color: "var(--text-muted)", fontFamily: "var(--font-sans)" }}
                 >
                   Featured edit
                 </p>
                 <h3
-                  className="text-xl font-bold leading-tight mb-2"
-                  style={{ fontFamily: "var(--font-serif)", color: "var(--plum)" }}
+                  className="text-2xl font-black leading-tight mb-2 tracking-tight"
+                  style={{ fontFamily: "var(--font-sans)", color: "var(--plum)" }}
                 >
                   Boots Soltan
                   <br />
                   Protect &amp; Moisturise SPF 50+
                 </h3>
                 <span
-                  className="text-sm font-semibold"
+                  className="text-sm font-bold"
                   style={{ color: "var(--gold)", fontFamily: "var(--font-sans)" }}
                 >
                   ৳860
