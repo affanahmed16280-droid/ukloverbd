@@ -6,7 +6,6 @@ import Link from "next/link";
 import { ArrowLeft, CheckCircle, Loader2, ShoppingBag } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import Header from "@/components/Header";
-import CartDrawer from "@/components/CartDrawer";
 import { useCartStore } from "@/store/cartStore";
 import { submitOrder } from "@/lib/firestore";
 
@@ -118,7 +117,6 @@ export default function CheckoutPage() {
             </div>
           </div>
         </main>
-        <CartDrawer />
       </>
     );
   }
@@ -326,7 +324,6 @@ export default function CheckoutPage() {
           </div>
         </div>
       </main>
-      <CartDrawer />
     </>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Search, User, Heart, ShoppingBag, ChevronRight } from "lucide-react";
+import { Search, User, Heart, ShoppingBag } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 
 const categories = [
@@ -101,19 +101,7 @@ export default function Header() {
               )}
             </button>
 
-            {/* Invoice Generator CTA */}
-            <button
-              className="hidden lg:flex items-center gap-2 text-[11px] font-bold px-5 py-2.5 rounded-full border border-gray-300 transition-all hover:bg-gray-50"
-              style={{
-                borderColor: "var(--plum)",
-                color: "var(--plum)",
-                fontFamily: "var(--font-sans)",
-                letterSpacing: "0.08em",
-              }}
-            >
-              INVOICE GENERATOR
-              <ChevronRight size={14} />
-            </button>
+
           </div>
         </div>
       </div>

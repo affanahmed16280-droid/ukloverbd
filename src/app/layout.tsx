@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import CartDrawer from "@/components/CartDrawer";
 
 export const metadata: Metadata = {
   title: "UK Brand Lover | London to Dhaka",
@@ -17,6 +18,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         {children}
+        <CartDrawer />
       </body>
     </html>
   );

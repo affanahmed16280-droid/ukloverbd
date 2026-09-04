@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Order System</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #faf9f6;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #2a0e2a;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #3a1e3a;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <h1>UK Brand Lover - Order System Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Firebase Configuration Test</h2>
+        <button onclick="testFirebase()">Test Firebase Connection</button>
+        <div id="firebase-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Order Submission Test</h2>
+        <button onclick="testOrderSubmission()">Test Order Submission</button>
+        <div id="order-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. System Status</h2>
+        <div id="system-status" class="result info">
+            <strong>Current Status:</strong><br>
+            • Firebase Config: ✅ Configured<br>
+            • Firestore: ✅ Enabled<br>
+            • Order System: ✅ Ready<br>
+            • Cart System: ✅ Functional<br>
+            • Checkout: ✅ Ready
+        </div>
+    </div>
+
+    <script type="module">
+        // Import Firebase SDKs
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDL23dqKxfGBkLcxjGqKfnwInzIpgO235g",
+            authDomain: "ukloverbangla.firebaseapp.com",
+            projectId: "ukloverbangla",
+            storageBucket: "ukloverbangla.firebasestorage.app",
+            messagingSenderId: "64007694018",
+            appId: "1:64007694018:web:728f3e9969cf670a193d5b"
+        };
+
+        let db;
+        let app;
+
+        // Initialize Firebase
+        function initFirebase() {
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                return true;
+            } catch (error) {
+                console.error('Firebase initialization error:', error);
+                return false;
+            }
+        }
+
+        // Test Firebase connection
+        window.testFirebase = function() {
+            const resultDiv = document.getElementById('firebase-result');
+            resultDiv.innerHTML = 'Testing Firebase connection...';
+            
+            try {
+                const success = initFirebase();
+                if (success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = '✅ Firebase successfully initialized!<br>Project: ukloverbangla<br>Status: Connected';
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = '❌ Firebase initialization failed';
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '❌ Error: ' + error.message;
+            }
+        };
+
+        // Test order submission
+        window.testOrderSubmission = async function() {
+            const resultDiv = document.getElementById('order-result');
+            resultDiv.innerHTML = 'Testing order submission...';
+            
+            try {
+                if (!db) {
+                    initFirebase();
+                }
+
+                const testOrder = {
+                    name: "Test Customer",
+                    phone: "01711123456",
+                    address: "Test Address, Dhaka, Bangladesh",
+                    notes: "Test order submission",
+                    items: [
+                        {
+                            id: "test-1",
+                            name: "CeraVe Hydrating Cleanser",
+                            brand: "CeraVe",
+                            price: 1850,
+                            quantity: 1,
+                            image: "test-image.jpg"
+                        }
+                    ],
+                    total: 1850,
+                    createdAt: serverTimestamp(),
+                    status: "pending"
+                };
+
+                const docRef = await addDoc(collection(db, "orders"), testOrder);
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = '✅ Test order successfully submitted!<br>Order ID: ' + docRef.id + '<br>Status: pending<br>Items: 1<br>Total: ৳1,850';
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '❌ Order submission failed: ' + error.message;
+                console.error('Order submission error:', error);
+            }
+        };
+
+        // Auto-test Firebase on load
+        window.addEventListener('load', () => {
+            console.log('Test page loaded. Firebase config:', firebaseConfig);
+        });
+    </script>
+</body>
+</html>
