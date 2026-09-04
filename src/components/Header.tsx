@@ -29,18 +29,18 @@ export default function Header() {
       }}
     >
       {/* Main header row */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-6 h-16">
+      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12">
+        <div className="flex items-center justify-between gap-8 h-20">
           {/* Brand */}
           <Link href="/" className="flex-shrink-0">
             <div
-              className="text-xl font-bold leading-none tracking-tight"
+              className="text-2xl font-bold leading-none tracking-tight"
               style={{ fontFamily: "var(--font-serif)", color: "var(--plum)" }}
             >
               UK Brand Lover
             </div>
             <div
-              className="text-[9px] font-semibold tracking-[0.25em] uppercase mt-0.5"
+              className="text-[10px] font-semibold tracking-[0.25em] uppercase mt-1"
               style={{ color: "var(--gold)", fontFamily: "var(--font-sans)" }}
             >
               London to Dhaka
@@ -48,29 +48,32 @@ export default function Header() {
           </Link>
 
           {/* Search bar */}
-          <div className="flex-1 max-w-md hidden md:block">
+          <div className="flex-1 max-w-xl hidden md:block mx-8">
             <div
-              className="flex items-center gap-2 rounded-full px-4 py-2 text-sm"
+              className="flex items-center gap-3 rounded-full px-5 py-2.5 w-full"
               style={{
                 backgroundColor: "var(--cream-dark)",
                 color: "var(--text-muted)",
               }}
             >
-              <Search size={14} strokeWidth={1.5} />
-              <span className="text-xs" style={{ fontFamily: "var(--font-sans)" }}>
-                Search Boots, Cetaphil, CeraVe...
-              </span>
+              <Search size={16} strokeWidth={1.5} />
+              <input
+                type="text"
+                placeholder="Search Boots, Cetaphil, CeraVe..."
+                className="bg-transparent border-none outline-none text-sm w-full font-medium placeholder-gray-400"
+                style={{ fontFamily: "var(--font-sans)", color: "var(--plum)" }}
+              />
             </div>
           </div>
 
           {/* Right icons */}
-          <div className="flex items-center gap-4 ml-auto">
+          <div className="flex items-center gap-6 flex-shrink-0">
             {/* User */}
             <button
               className="p-1 transition-opacity hover:opacity-60"
               style={{ color: "var(--plum)" }}
             >
-              <User size={18} strokeWidth={1.5} />
+              <User size={20} strokeWidth={1.5} />
             </button>
 
             {/* Wishlist */}
@@ -78,7 +81,7 @@ export default function Header() {
               className="p-1 transition-opacity hover:opacity-60"
               style={{ color: "var(--plum)" }}
             >
-              <Heart size={18} strokeWidth={1.5} />
+              <Heart size={20} strokeWidth={1.5} />
             </button>
 
             {/* Cart */}
@@ -87,11 +90,11 @@ export default function Header() {
               className="relative p-1 transition-opacity hover:opacity-60 cursor-pointer"
               style={{ color: "var(--plum)" }}
             >
-              <ShoppingBag size={18} strokeWidth={1.5} />
+              <ShoppingBag size={20} strokeWidth={1.5} />
               {count > 0 && (
                 <span
-                  className="absolute -top-1.5 -right-1.5 text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center"
-                  style={{ backgroundColor: "var(--gold)", color: "white" }}
+                  className="absolute -top-1.5 -right-1.5 text-[10px] font-bold rounded-full w-[18px] h-[18px] flex items-center justify-center"
+                  style={{ backgroundColor: "var(--plum)", color: "white" }}
                 >
                   {count}
                 </span>
@@ -100,16 +103,16 @@ export default function Header() {
 
             {/* Invoice Generator CTA */}
             <button
-              className="hidden sm:flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full border transition-all hover:opacity-80"
+              className="hidden lg:flex items-center gap-2 text-[11px] font-bold px-5 py-2.5 rounded-full border border-gray-300 transition-all hover:bg-gray-50"
               style={{
                 borderColor: "var(--plum)",
                 color: "var(--plum)",
                 fontFamily: "var(--font-sans)",
-                letterSpacing: "0.05em",
+                letterSpacing: "0.08em",
               }}
             >
               INVOICE GENERATOR
-              <ChevronRight size={12} />
+              <ChevronRight size={14} />
             </button>
           </div>
         </div>
@@ -120,26 +123,24 @@ export default function Header() {
         className="border-t"
         style={{ borderColor: "var(--cream-darker)" }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 py-2.5 overflow-x-auto scrollbar-hide">
+        <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12">
+          <div className="flex items-center gap-3 py-3 overflow-x-auto scrollbar-hide">
             {categories.map((cat, i) => (
               <button
                 key={cat}
-                className="flex-shrink-0 text-xs font-medium px-4 py-1.5 rounded-full transition-all cursor-pointer"
+                className="flex-shrink-0 text-xs font-semibold px-5 py-2 rounded-full transition-all cursor-pointer"
                 style={
                   i === 0
                     ? {
                         backgroundColor: "var(--plum)",
                         color: "white",
                         fontFamily: "var(--font-sans)",
-                        letterSpacing: "0.02em",
                       }
                     : {
                         backgroundColor: "transparent",
                         color: "var(--text-body)",
                         border: "1px solid var(--cream-darker)",
                         fontFamily: "var(--font-sans)",
-                        letterSpacing: "0.02em",
                       }
                 }
               >

@@ -33,8 +33,8 @@ export default function FeaturesStrip() {
         borderColor: "var(--cream-darker)",
       }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12 py-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map((f) => (
             <div key={f.title} className="flex items-start gap-3">
               <div className="flex-shrink-0 mt-0.5">

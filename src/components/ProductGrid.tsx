@@ -8,11 +8,11 @@ export default function ProductGrid() {
       className="py-16"
       style={{ backgroundColor: "var(--cream)" }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12">
         {/* Section header */}
-        <div className="mb-10">
+        <div className="mb-12 border-b pb-6" style={{ borderColor: "var(--cream-darker)" }}>
           <h2
-            className="text-2xl sm:text-3xl font-bold"
+            className="text-3xl sm:text-4xl font-bold"
             style={{
               fontFamily: "var(--font-serif)",
               color: "var(--plum)",
@@ -29,8 +29,8 @@ export default function ProductGrid() {
           </p>
         </div>
 
-        {/* Grid — matches reference 3-col layout */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
+        {/* Grid — matches reference 4-col layout */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
           {products.map((product, i) => (
             <ProductCard key={product.id} product={product} index={i} />
           ))}

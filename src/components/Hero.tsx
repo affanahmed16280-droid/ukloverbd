@@ -22,17 +22,17 @@ function FacebookIcon({ size = 16 }: { size?: number }) {
 export default function Hero() {
   return (
     <section
-      className="py-16 lg:py-24"
+      className="py-16 lg:py-24 relative"
       style={{ backgroundColor: "var(--cream)" }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12">
+        <div className="flex flex-col lg:flex-row justify-between items-center gap-16 lg:gap-24">
 
           {/* Left Content */}
-          <div>
+          <div className="flex-1 max-w-2xl">
             {/* Eyebrow tag */}
             <div
-              className="flex items-center gap-2 mb-6 text-[10px] font-semibold tracking-[0.2em] uppercase"
+              className="flex items-center gap-2 mb-8 text-[11px] font-semibold tracking-[0.2em] uppercase"
               style={{ color: "var(--gold)", fontFamily: "var(--font-sans)" }}
             >
               GENUINELY SOURCED
@@ -42,7 +42,7 @@ export default function Hero() {
 
             {/* Headline */}
             <h1
-              className="text-4xl sm:text-5xl lg:text-[3.5rem] xl:text-[4rem] leading-[1.1] mb-6"
+              className="text-5xl sm:text-6xl lg:text-[5rem] xl:text-[5.5rem] leading-[1.05] mb-8"
               style={{
                 fontFamily: "var(--font-serif)",
                 color: "var(--plum)",
@@ -52,7 +52,7 @@ export default function Hero() {
               British shelf staples,{" "}
               <br className="hidden sm:block" />
               <em
-                className="not-italic"
+                className="not-italic inline-block mt-2"
                 style={{
                   color: "var(--gold)",
                   fontStyle: "italic",
@@ -68,7 +68,7 @@ export default function Hero() {
 
             {/* Description */}
             <p
-              className="text-sm leading-relaxed mb-8 max-w-sm"
+              className="text-base sm:text-lg leading-relaxed mb-10 max-w-md"
               style={{ color: "var(--text-body)", fontFamily: "var(--font-sans)" }}
             >
               Authentic beauty and personal care, picked from trusted stores like{" "}
@@ -78,31 +78,31 @@ export default function Hero() {
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-wrap items-center gap-3 mb-10">
+            <div className="flex flex-wrap items-center gap-4 mb-12">
               <Link
                 href="#products"
-                className="inline-flex items-center gap-2 text-xs font-semibold px-6 py-3 rounded-full transition-all hover:opacity-80"
+                className="inline-flex items-center gap-2 text-sm font-semibold px-8 py-4 rounded-full transition-all hover:opacity-80"
                 style={{
                   backgroundColor: "var(--plum)",
                   color: "white",
                   fontFamily: "var(--font-sans)",
-                  letterSpacing: "0.08em",
+                  letterSpacing: "0.05em",
                 }}
               >
                 SHOP COLLECTION
-                <ArrowRight size={12} />
+                <ArrowRight size={16} />
               </Link>
 
               <a
                 href="https://facebook.com/ukloverbangla"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-xs font-semibold px-6 py-3 rounded-full border transition-all hover:opacity-70"
+                className="inline-flex items-center gap-2 text-sm font-semibold px-8 py-4 rounded-full border transition-all hover:opacity-70"
                 style={{
                   borderColor: "var(--cream-darker)",
                   color: "var(--plum)",
                   fontFamily: "var(--font-sans)",
-                  letterSpacing: "0.08em",
+                  letterSpacing: "0.05em",
                   backgroundColor: "transparent",
                 }}
               >
@@ -111,13 +111,12 @@ export default function Hero() {
             </div>
 
             {/* Trust badge */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4 mt-8">
               <div
-                className="w-10 h-10 rounded-full border-2 flex items-center justify-center flex-shrink-0"
-                style={{ borderColor: "var(--cream-darker)" }}
+                className="w-12 h-12 rounded-full border border-gray-300 flex items-center justify-center flex-shrink-0"
               >
                 <span
-                  className="text-[10px] font-bold"
+                  className="text-xs font-bold"
                   style={{ color: "var(--plum)", fontFamily: "var(--font-serif)" }}
                 >
                   UK
@@ -125,14 +124,14 @@ export default function Hero() {
               </div>
               <div>
                 <p
-                  className="text-xs font-medium leading-tight"
-                  style={{ color: "var(--plum)", fontFamily: "var(--font-sans)" }}
+                  className="text-sm font-medium leading-tight italic"
+                  style={{ color: "var(--plum)", fontFamily: "var(--font-serif)" }}
                 >
                   Personal imports,
                 </p>
                 <p
-                  className="text-xs leading-tight"
-                  style={{ color: "var(--text-muted)", fontFamily: "var(--font-sans)" }}
+                  className="text-sm leading-tight italic"
+                  style={{ color: "var(--text-muted)", fontFamily: "var(--font-serif)" }}
                 >
                   properly verified
                 </p>
@@ -141,29 +140,29 @@ export default function Hero() {
           </div>
 
           {/* Right: Featured Product Card */}
-          <div className="hidden lg:block">
+          <div className="hidden lg:block w-full max-w-[500px]">
             <div
-              className="relative rounded-2xl p-8 overflow-hidden"
-              style={{ backgroundColor: "var(--cream-dark)" }}
+              className="relative rounded-[2rem] p-10 overflow-hidden"
+              style={{ backgroundColor: "var(--cream-dark)", aspectRatio: '4/4' }}
             >
               {/* Top-right badge */}
-              <div className="absolute top-5 right-5 text-right">
+              <div className="absolute top-8 right-8 text-right z-10">
                 <div
-                  className="flex items-center gap-1.5 justify-end mb-0.5"
+                  className="flex items-center gap-1.5 justify-end mb-1"
                   style={{ color: "var(--sage)" }}
                 >
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                   <span
-                    className="text-[9px] font-semibold"
+                    className="text-[10px] font-semibold tracking-wide"
                     style={{ fontFamily: "var(--font-sans)" }}
                   >
                     100% verified
                   </span>
                 </div>
                 <p
-                  className="text-[9px]"
+                  className="text-[10px] font-medium"
                   style={{ color: "var(--text-muted)", fontFamily: "var(--font-sans)" }}
                 >
                   Authentic UK Import
@@ -171,43 +170,43 @@ export default function Hero() {
               </div>
 
               {/* Product image placeholder */}
-              <div className="flex justify-center items-center py-12">
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div
-                  className="w-36 h-52 rounded-2xl shadow-lg flex items-end justify-center pb-4 relative overflow-hidden"
+                  className="w-48 h-72 rounded-3xl shadow-xl flex items-end justify-center pb-6 relative overflow-hidden"
                   style={{
-                    background: "linear-gradient(135deg, #C9A96A 0%, #E8C98A 50%, #C09060 100%)",
+                    background: "linear-gradient(135deg, #D4B47B 0%, #E8CD97 50%, #C4986B 100%)",
                   }}
                 >
                   {/* Bottle cap */}
                   <div
-                    className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-6 rounded-md"
+                    className="absolute top-4 left-1/2 -translate-x-1/2 w-16 h-8 rounded-lg"
                     style={{ backgroundColor: "var(--plum)" }}
                   />
                   {/* Brand text on bottle */}
-                  <div className="text-center">
+                  <div className="text-center z-10">
                     <p
-                      className="text-[7px] font-semibold tracking-widest"
-                      style={{ color: "var(--plum)", opacity: 0.6 }}
+                      className="text-[9px] font-bold tracking-[0.3em] mb-0.5"
+                      style={{ color: "rgba(28,20,32,0.5)" }}
                     >
                       UK
                     </p>
                     <p
-                      className="text-[7px] font-semibold tracking-widest"
-                      style={{ color: "var(--plum)", opacity: 0.6 }}
+                      className="text-[9px] font-bold tracking-[0.3em]"
+                      style={{ color: "rgba(28,20,32,0.5)" }}
                     >
                       BRAND
                     </p>
                   </div>
                   {/* Leaf decoration */}
                   <div
-                    className="absolute -right-3 bottom-8 w-10 h-14 rounded-full opacity-40"
+                    className="absolute -right-4 bottom-12 w-16 h-24 rounded-full opacity-60"
                     style={{
                       backgroundColor: "var(--sage)",
                       transform: "rotate(30deg)",
                     }}
                   />
                   <div
-                    className="absolute -left-3 bottom-12 w-8 h-12 rounded-full opacity-30"
+                    className="absolute -left-4 bottom-16 w-12 h-20 rounded-full opacity-50"
                     style={{
                       backgroundColor: "var(--sage)",
                       transform: "rotate(-20deg)",
@@ -216,16 +215,16 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* Product info */}
-              <div className="mt-2">
+              {/* Product info (bottom left) */}
+              <div className="absolute bottom-8 left-8 z-10">
                 <p
-                  className="text-[10px] font-medium mb-1"
+                  className="text-[11px] font-medium mb-1.5"
                   style={{ color: "var(--text-muted)", fontFamily: "var(--font-sans)" }}
                 >
                   Featured edit
                 </p>
                 <h3
-                  className="text-lg font-bold leading-tight mb-2"
+                  className="text-xl font-bold leading-tight mb-2"
                   style={{ fontFamily: "var(--font-serif)", color: "var(--plum)" }}
                 >
                   Boots Soltan
@@ -233,7 +232,7 @@ export default function Hero() {
                   Protect &amp; Moisturise SPF 50+
                 </h3>
                 <span
-                  className="text-xs font-semibold"
+                  className="text-sm font-semibold"
                   style={{ color: "var(--gold)", fontFamily: "var(--font-sans)" }}
                 >
                   ৳860
