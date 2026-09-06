@@ -5,6 +5,10 @@ export function cloudinaryUrl(
   width = 400,
   height = 400
 ): string {
+  if (publicId.startsWith("http://") || publicId.startsWith("https://")) {
+    return publicId;
+  }
+
   return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_${width},h_${height},c_fill,q_auto,f_auto/${publicId}`;
 }
 

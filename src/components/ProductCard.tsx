@@ -9,53 +9,7 @@ interface ProductCardProps {
   product: Product;
 }
 
-// Bottle colors matching the reference site aesthetic
-const bottleGradients: Record<number, string> = {
-  0: "linear-gradient(160deg, #C9A96A 0%, #E8C98A 50%, #BF8E5A 100%)",
-  1: "linear-gradient(160deg, #D4AA70 0%, #EDD090 50%, #C8965A 100%)",
-  2: "linear-gradient(160deg, #D6DDD8 0%, #E8EDE9 50%, #C2CCC4 100%)",
-  3: "linear-gradient(160deg, #E2D5BE 0%, #F0E8D4 50%, #D4C4A8 100%)",
-  4: "linear-gradient(160deg, #C4B090 0%, #DDD0B2 50%, #B8A07A 100%)",
-  5: "linear-gradient(160deg, #D8CEB8 0%, #EEE7D2 50%, #C8BBA0 100%)",
-  6: "linear-gradient(160deg, #DCDEE0 0%, #ECEEF0 50%, #CACDD0 100%)",
-  7: "linear-gradient(160deg, #C8A878 0%, #E4C898 50%, #B89460 100%)",
-};
-
-function BottleVisual({ index }: { index: number }) {
-  const gradient = bottleGradients[index % 8];
-  return (
-    <div className="relative w-40 h-56 mx-auto">
-      {/* Main bottle body */}
-      <div
-        className="absolute inset-x-4 bottom-0 top-6 rounded-[1.5rem] shadow-md"
-        style={{ background: gradient }}
-      />
-      {/* Cap */}
-      <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-8 rounded-lg shadow-sm"
-        style={{ backgroundColor: "var(--plum)" }}
-      />
-      {/* Label area */}
-      <div
-        className="absolute inset-x-6 top-[45%] -translate-y-1/2 text-center"
-      >
-        <p className="text-[7px] font-bold tracking-[0.2em] mb-0.5" style={{ color: "rgba(28,20,32,0.4)" }}>UK</p>
-        <p className="text-[7px] font-bold tracking-[0.2em]" style={{ color: "rgba(28,20,32,0.4)" }}>BRAND</p>
-      </div>
-      {/* Leaf decorations */}
-      <div
-        className="absolute -right-2 bottom-12 w-10 h-16 rounded-full opacity-40"
-        style={{ backgroundColor: "#7A8F7E", transform: "rotate(30deg)" }}
-      />
-      <div
-        className="absolute -left-2 bottom-16 w-8 h-12 rounded-full opacity-30"
-        style={{ backgroundColor: "#7A8F7E", transform: "rotate(-20deg)" }}
-      />
-    </div>
-  );
-}
-
-export default function ProductCard({ product, index = 0 }: ProductCardProps & { index?: number }) {
+export default function ProductCard({ product }: ProductCardProps) {
   const addItem = useCartStore((s) => s.addItem);
 
   const handleAdd = () => {
@@ -123,20 +77,14 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps & {
           <Heart size={14} strokeWidth={2} />
         </button>
 
-        {/* Product visual */}
-        {product.image.startsWith("samples/") ? (
-          <div className="flex items-center justify-center h-full">
-            <BottleVisual index={index} />
-          </div>
-        ) : (
-          <Image
-            src={cloudinaryUrl(product.image, 400, 500)}
-            alt={`${product.brand} ${product.name}`}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          />
-        )}
+        {/* Product image */}
+        <Image
+          src={cloudinaryUrl(product.image, 400, 500)}
+          alt={`${product.brand} ${product.name}`}
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+        />
       </div>
 
       {/* Product info */}

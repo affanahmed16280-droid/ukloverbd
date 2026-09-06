@@ -30,8 +30,8 @@ export default function ProductGrid() {
 
         {/* Grid — matches reference 4-col layout */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
-          {products.map((product, i) => (
-            <ProductCard key={product.id} product={product} index={i} />
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </div>
