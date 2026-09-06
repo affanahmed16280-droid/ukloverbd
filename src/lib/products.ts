@@ -24,6 +24,47 @@ export interface Product {
   badge?: string;
 }
 
+export interface FirestoreProduct {
+  name?: unknown;
+  brand?: unknown;
+  variant?: unknown;
+  price?: unknown;
+  originalPrice?: unknown;
+  imageUrl?: unknown;
+  image?: unknown;
+  category?: unknown;
+  badge?: unknown;
+  sku?: unknown;
+}
+
+export function productFromFirestore(
+  id: string,
+  data: FirestoreProduct
+): Product | null {
+  const image = typeof data.imageUrl === "string"
+    ? data.imageUrl
+    : typeof data.image === "string"
+      ? data.image
+      : "";
+  const name = typeof data.name === "string" ? data.name : "";
+
+  if (!image || !name) {
+    return null;
+  }
+
+  return {
+    id,
+    brand: typeof data.brand === "string" ? data.brand : "UK Lover BD",
+    name,
+    variant: typeof data.variant === "string" ? data.variant : "",
+    price: typeof data.price === "number" ? data.price : 0,
+    originalPrice: typeof data.originalPrice === "number" ? data.originalPrice : undefined,
+    image,
+    category: typeof data.category === "string" ? data.category : "Beauty & Care",
+    badge: typeof data.badge === "string" ? data.badge : undefined,
+  };
+}
+
 export const products: Product[] = [
   {
     id: "1",

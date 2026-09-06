@@ -1,7 +1,39 @@
-import { products } from "@/lib/products";
+"use client";
+
+import { useEffect, useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { productFromFirestore, products, type Product } from "@/lib/products";
 import ProductCard from "./ProductCard";
 
 export default function ProductGrid() {
+  const [storeProducts, setStoreProducts] = useState<Product[]>(products);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadProducts() {
+      try {
+        const snapshot = await getDocs(collection(db, "products"));
+        const firestoreProducts = snapshot.docs
+          .map((document) => productFromFirestore(document.id, document.data()))
+          .filter((product): product is Product => product !== null);
+
+        if (active && firestoreProducts.length > 0) {
+          setStoreProducts(firestoreProducts);
+        }
+      } catch (error) {
+        console.error("Unable to load products from Firestore", error);
+      }
+    }
+
+    void loadProducts();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <section
       id="products"
@@ -30,7 +62,7 @@ export default function ProductGrid() {
 
         {/* Grid — matches reference 4-col layout */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
-          {products.map((product) => (
+          {storeProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
