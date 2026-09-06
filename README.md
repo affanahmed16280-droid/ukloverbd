@@ -16,6 +16,24 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Upload Product Images
+
+The bulk uploader reads images from `product-images`, uploads them to the
+`products` folder in Cloudinary, and creates matching documents in Firestore.
+
+Set the Cloudinary credentials in PowerShell before running it:
+
+```powershell
+$env:CLOUDINARY_CLOUD_NAME = "your-cloud-name"
+$env:CLOUDINARY_API_KEY = "your-api-key"
+$env:CLOUDINARY_API_SECRET = "your-api-secret"
+npm run upload
+```
+
+The uploader also requires `serviceAccountKey.json` in the project root. This
+file is ignored by Git and must not be committed. Rotate the Cloudinary and
+Firebase credentials if they have been shared publicly or committed before.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
