@@ -68,7 +68,7 @@ for (const entry of imageFiles) {
       name: productName,
       price: 0,
       sku: `SKU-${Math.floor(100000 + Math.random() * 900000)}`,
-      imageUrl: uploadResult.secure_url,
+      image: uploadResult.public_id,  // Store public ID instead of URL
       createdAt: FieldValue.serverTimestamp(),
     });
 

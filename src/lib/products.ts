@@ -41,10 +41,10 @@ export function productFromFirestore(
   id: string,
   data: FirestoreProduct
 ): Product | null {
-  const image = typeof data.imageUrl === "string"
-    ? data.imageUrl
-    : typeof data.image === "string"
-      ? data.image
+  const image = typeof data.image === "string"
+    ? data.image
+    : typeof data.imageUrl === "string"
+      ? data.imageUrl
       : "";
   const name = typeof data.name === "string" ? data.name : "";
 
