@@ -9,7 +9,12 @@ import { Upload, X, Edit2, Trash2, Save, Plus, Lock } from 'lucide-react'
 
 // Helper function to construct Cloudinary URLs
 const getImageUrl = (imageId: string): string => {
-  if (!imageId) return 'https://via.placeholder.com/400?text=No+Image'
+  console.log('Getting image URL for:', imageId)
+  
+  if (!imageId || imageId === 'undefined' || imageId === 'null') {
+    console.log('Invalid image ID, using placeholder')
+    return 'https://via.placeholder.com/400?text=No+Image'
+  }
   
   // If it's already a full URL, return it
   if (imageId.startsWith('http://') || imageId.startsWith('https://')) {
@@ -18,7 +23,9 @@ const getImageUrl = (imageId: string): string => {
   
   // Otherwise construct Cloudinary URL
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'demo'
-  return `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_400,c_fill,q_auto,f_auto/${imageId}`
+  const url = `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_400,c_fill,q_auto,f_auto/${imageId}`
+  console.log('Constructed URL:', url)
+  return url
 }
 
 interface ProductFormData {
@@ -495,8 +502,9 @@ export default function AdminPage() {
                       alt={product.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        console.error('Image failed to load:', product.image)
-                        e.currentTarget.src = 'https://via.placeholder.com/400?text=Image+Error'
+                        console.error('Image failed to load:', product.image, 'Product:', product.name)
+                        console.log('Product data:', product)
+                        e.currentTarget.src = 'https://via.placeholder.com/400?text=Fix+Image+URL'
                       }}
                     />
                   </div>

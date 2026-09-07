@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "upload": "node --env-file=.env.local scripts/bulk-upload.mjs",
-    "import-cloudinary": "node --env-file=.env.local scripts/import-cloudinary-images.mjs"
+    "import-cloudinary": "node --env-file=.env.local scripts/import-cloudinary-images.mjs",
+    "fix-images": "node --env-file=.env.local scripts/fix-product-images.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
