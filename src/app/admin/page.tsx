@@ -29,7 +29,7 @@ export default function AdminPage() {
   const [authError, setAuthError] = useState('')
 
   const categories = ['Skincare', 'Body Care', 'Haircare', 'Cosmetics', 'Baby Care', 'Jewelry']
-  const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123'
+  const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'ukbrandloverbdacc'
 
   useEffect(() => {
     // Check if already authenticated in session
@@ -83,8 +83,12 @@ export default function AdminPage() {
     const uploadedProducts: Product[] = []
 
     try {
+      console.log('Starting bulk upload for', files.length, 'files')
+      
       for (const file of Array.from(files)) {
+        console.log('Processing file:', file.name)
         const imageUrl = await uploadToCloudinary(file)
+        console.log('Image uploaded successfully:', imageUrl)
         
         // Extract basic info from filename
         const fileName = file.name.replace(/\.[^/.]+$/, '')
@@ -102,8 +106,10 @@ export default function AdminPage() {
         }
         
         uploadedProducts.push(newProduct)
+        console.log('Product created:', newProduct)
       }
 
+      console.log('Adding products to Firestore...')
       // Add all to Firestore
       for (const product of uploadedProducts) {
         await addDoc(collection(db, 'products'), {
@@ -117,11 +123,12 @@ export default function AdminPage() {
         })
       }
 
+      console.log('Loading products from Firestore...')
       await loadProducts()
       alert(`Successfully uploaded ${uploadedProducts.length} products!`)
     } catch (error) {
       console.error('Upload error:', error)
-      alert('Failed to upload images')
+      alert(`Failed to upload images: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setUploading(false)
     }
@@ -234,8 +241,16 @@ export default function AdminPage() {
           </form>
 
           <div className="mt-6 text-center text-xs text-muted-foreground">
-            <p>Default password: admin123</p>
-            <p className="mt-1">Change this in your environment variables</p>
+            <p>Admin password: ukbrandloverbdacc</p>
+            <p className="mt-1">Configured in environment variables</p>
+          </div>
+
+          {/* Debug Information */}
+          <div className="mt-6 p-4 bg-secondary rounded-lg text-xs">
+            <p className="font-semibold mb-2">Debug Info:</p>
+            <p>Cloud Name: {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'Not set'}</p>
+            <p>Upload Preset: {process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'Not set'}</p>
+            <p>Firebase Project: {process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'Not set'}</p>
           </div>
         </div>
       </div>
