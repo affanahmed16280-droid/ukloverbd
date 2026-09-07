@@ -71,15 +71,21 @@ export default function Page() {
   const slide = heroSlides[activeSlide]
   
   const filteredProducts = useMemo(() => {
+    console.log('Total products in store:', storeProducts.length)
+    console.log('Selected category:', selectedCategory)
+    console.log('Search query:', query)
+    
     let filtered = storeProducts.filter((product) =>
       `${product.name} ${product.brand} ${product.category}`.toLowerCase().includes(query.toLowerCase())
     )
+    
+    console.log('After search filter:', filtered.length)
     
     if (selectedCategory !== 'All Products') {
       if (selectedCategory === 'Offers') {
         filtered = filtered.filter(product => product.badge && ['Sale', 'Best Seller', 'New'].includes(product.badge))
       } else {
-        // Map category names to product categories
+        // More lenient category matching
         const categoryMap: Record<string, string> = {
           'Sunscreen': 'Skincare',
           'Facewash': 'Skincare', 
@@ -91,13 +97,18 @@ export default function Page() {
         }
         
         const targetCategory = categoryMap[selectedCategory] || selectedCategory
-        filtered = filtered.filter(product => 
-          product.category === targetCategory || 
-          product.name.toLowerCase().includes(selectedCategory.toLowerCase()) ||
-          product.brand.toLowerCase().includes(selectedCategory.toLowerCase())
-        )
+        filtered = filtered.filter(product => {
+          const categoryMatch = product.category === targetCategory
+          const nameMatch = product.name.toLowerCase().includes(selectedCategory.toLowerCase())
+          const brandMatch = product.brand.toLowerCase().includes(selectedCategory.toLowerCase())
+          
+          return categoryMatch || nameMatch || brandMatch
+        })
       }
     }
+    
+    console.log('After category filter:', filtered.length)
+    console.log('Filtered products:', filtered.map(p => ({ name: p.name, category: p.category, image: p.image })))
     
     return filtered
   }, [query, selectedCategory, storeProducts])
@@ -151,16 +162,32 @@ ${orderItems.map(item => `- ${item.name} (${item.quantity}x) - ${convertPrice(it
 
     async function loadProducts() {
       try {
+        console.log('Loading products from Firestore...')
         const snapshot = await getDocs(collection(db, "products"))
+        console.log('Firestore snapshot size:', snapshot.docs.length)
+        
         const firestoreProducts = snapshot.docs
-          .map((document) => productFromFirestore(document.id, document.data()))
+          .map((document) => {
+            console.log('Processing document:', document.id, document.data())
+            return productFromFirestore(document.id, document.data())
+          })
           .filter((product): product is Product => product !== null)
+
+        console.log('Valid products loaded:', firestoreProducts.length)
+        console.log('Products:', firestoreProducts.map(p => ({ name: p.name, image: p.image })))
 
         if (active && firestoreProducts.length > 0) {
           setStoreProducts(firestoreProducts)
+        } else if (active) {
+          console.log('No valid products found, using fallback products')
+          setStoreProducts(products)
         }
       } catch (error) {
         console.error("Unable to load products from Firestore", error)
+        console.log('Using fallback products due to error')
+        if (active) {
+          setStoreProducts(products)
+        }
       }
     }
 
@@ -339,7 +366,33 @@ ${orderItems.map(item => `- ${item.name} (${item.quantity}x) - ${convertPrice(it
         <section id="products" className="mt-20 scroll-mt-28">
           <div className="flex items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">The edit</p><h2 className="mt-2 text-4xl text-foreground">Loved by our community</h2></div><div className="hidden items-center gap-1 text-xs text-muted-foreground sm:flex"><Star size={14} className="fill-accent text-accent" /> 4.8 average rating</div></div>
           
-          {filteredProducts.length === 0 ? <p className="mt-8 rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">No beauty finds match your search yet.</p> : <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-5">{filteredProducts.map((product) => <article key={product.id} className="group"><div className="relative aspect-square overflow-hidden rounded-[20px] bg-secondary"><img src={product.image.startsWith('http') ? product.image : `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'demo'}/image/upload/w_400,h_400,c_fill,q_auto,f_auto/${product.image}`} alt={product.name} className="h-full w-full object-cover mix-blend-multiply transition-transform duration-500 group-hover:scale-105" /><button type="button" onClick={() => handleAddToCart(product)} className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-card text-primary shadow-md transition-transform hover:scale-110" aria-label={`Add ${product.name} to cart`}><ShoppingBag size={16} /></button></div><p className="mt-4 text-[10px] font-bold uppercase tracking-wider text-accent">{product.brand}</p><h3 className="mt-1 text-sm font-semibold text-foreground sm:text-base">{product.name}</h3><div className="mt-2 flex items-center justify-between"><p className="text-sm font-semibold text-primary">{convertPrice(product.price)}</p><span className="flex items-center gap-1 text-[11px] text-muted-foreground"><Star size={12} className="fill-accent text-accent" /> 4.8</span></div></article>)}</div>}
+          {filteredProducts.length === 0 ? <p className="mt-8 rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">No beauty finds match your search yet.</p> : <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-5">{filteredProducts.map((product) => {
+            const imageUrl = product.image.startsWith('http') 
+              ? product.image 
+              : `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'demo'}/image/upload/w_400,h_400,c_fill,q_auto,f_auto/${product.image}`
+            
+            console.log('Rendering product:', product.name, 'Image URL:', imageUrl)
+            
+            return (
+              <article key={product.id} className="group">
+                <div className="relative aspect-square overflow-hidden rounded-[20px] bg-secondary">
+                  <img 
+                    src={imageUrl} 
+                    alt={product.name} 
+                    className="h-full w-full object-cover mix-blend-multiply transition-transform duration-500 group-hover:scale-105"
+                    onError={(e) => {
+                      console.error('Image failed to load:', imageUrl)
+                      e.currentTarget.style.display = 'none'
+                    }}
+                  />
+                  <button type="button" onClick={() => handleAddToCart(product)} className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-card text-primary shadow-md transition-transform hover:scale-110" aria-label={`Add ${product.name} to cart`}><ShoppingBag size={16} /></button>
+                </div>
+                <p className="mt-4 text-[10px] font-bold uppercase tracking-wider text-accent">{product.brand}</p>
+                <h3 className="mt-1 text-sm font-semibold text-foreground sm:text-base">{product.name}</h3>
+                <div className="mt-2 flex items-center justify-between"><p className="text-sm font-semibold text-primary">{convertPrice(product.price)}</p><span className="flex items-center gap-1 text-[11px] text-muted-foreground"><Star size={12} className="fill-accent text-accent" /> 4.8</span></div>
+              </article>
+            )
+          })}</div>}
         </section>
 
         <section id="contact" className="mt-20 overflow-hidden rounded-[25px] bg-primary px-7 py-12 text-primary-foreground sm:px-14"><div className="flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-center"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-primary-foreground/70">Stay in the know</p><h2 className="mt-3 text-3xl sm:text-4xl">Beauty notes, just for you.</h2><p className="mt-3 max-w-md text-sm leading-6 text-primary-foreground/75">Join our little community for new drops, thoughtful beauty advice, and first access to exclusive finds.</p></div><button type="button" className="rounded-full bg-primary-foreground px-6 py-3 text-sm font-semibold text-primary transition-transform hover:scale-105">Join the community <ArrowRight size={15} className="ml-2 inline" /></button></div></section>
