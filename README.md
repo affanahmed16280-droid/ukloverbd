@@ -105,6 +105,7 @@ Default password is `admin123`. Change this for security!
 
 ## Upload Product Images
 
+### Option 1: Upload New Images
 The bulk uploader reads images from `product-images`, uploads them to the
 `products` folder in Cloudinary, and creates matching documents in Firestore.
 
@@ -116,6 +117,25 @@ $env:CLOUDINARY_API_KEY = "your-api-key"
 $env:CLOUDINARY_API_SECRET = "your-api-secret"
 npm run upload
 ```
+
+### Option 2: Import Existing Cloudinary Images
+If you already have images in Cloudinary, import them automatically:
+
+```powershell
+$env:CLOUDINARY_API_KEY = "your-api-key"
+$env:CLOUDINARY_API_SECRET = "your-api-secret"
+npm run import-cloudinary
+```
+
+This will:
+- Fetch all images from your Cloudinary account
+- Create products automatically with extracted names from filenames
+- Add them to your Firestore database
+
+**Get your Cloudinary API credentials:**
+1. Go to Cloudinary Dashboard → Settings → API Keys
+2. Copy your API Key and API Secret
+3. Add them to your environment variables
 
 The uploader also requires `serviceAccountKey.json` in the project root. This
 file is ignored by Git and must not be committed. Rotate the Cloudinary and
