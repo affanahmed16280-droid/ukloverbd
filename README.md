@@ -16,6 +16,24 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Admin Panel
+
+Access the admin panel at [http://localhost:3000/admin](http://localhost:3000/admin) for:
+
+- **Bulk Image Upload**: Upload multiple product images at once
+- **Product Management**: Edit product names, prices, categories, and images
+- **Easy for Non-Technical Users**: Simple forms - no coding knowledge needed
+
+### Admin Login
+
+The admin panel is password protected. Set your admin password in `.env.local`:
+
+```env
+NEXT_PUBLIC_ADMIN_PASSWORD=your_secure_password
+```
+
+Default password is `admin123`. Change this for security!
+
 ## Upload Product Images
 
 The bulk uploader reads images from `product-images`, uploads them to the

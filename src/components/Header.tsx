@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Search, User, Heart, ShoppingBag } from "lucide-react";
+import { Search, User, Heart, ShoppingBag, Settings } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 
 const categories = [
@@ -19,6 +20,13 @@ const categories = [
 export default function Header() {
   const { toggleCart, totalItems } = useCartStore();
   const count = totalItems();
+  const [selectedCategory, setSelectedCategory] = useState("All Products");
+
+  const handleCategoryClick = (category: string) => {
+    setSelectedCategory(category);
+    // Dispatch event for page to handle
+    window.dispatchEvent(new CustomEvent('categoryChange', { detail: category }));
+  };
 
   return (
     <header
@@ -68,6 +76,11 @@ export default function Header() {
 
           {/* Right icons */}
           <div className="flex items-center gap-6 flex-shrink-0">
+            {/* Admin */}
+            <Link href="/admin" className="p-1 transition-opacity hover:opacity-60" style={{ color: "var(--plum)" }}>
+              <Settings size={20} strokeWidth={1.5} />
+            </Link>
+
             {/* User */}
             <button
               className="p-1 transition-opacity hover:opacity-60"
@@ -113,12 +126,13 @@ export default function Header() {
       >
         <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12">
           <div className="flex items-center gap-3 py-3 overflow-x-auto scrollbar-hide">
-            {categories.map((cat, i) => (
+            {categories.map((cat) => (
               <button
                 key={cat}
+                onClick={() => handleCategoryClick(cat)}
                 className="flex-shrink-0 text-xs font-semibold px-5 py-2 rounded-full transition-all cursor-pointer"
                 style={
-                  i === 0
+                  selectedCategory === cat
                     ? {
                         backgroundColor: "var(--plum)",
                         color: "white",

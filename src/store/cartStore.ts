@@ -22,7 +22,9 @@ interface CartState {
   closeCart: () => void;
   toggleCart: () => void;
   totalItems: () => number;
+  total: () => number;
   totalPrice: () => number;
+  getItems: () => CartItem[];
 }
 
 export const useCartStore = create<CartState>()(
@@ -71,8 +73,10 @@ export const useCartStore = create<CartState>()(
       toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),
 
       totalItems: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
+      total: () => get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
       totalPrice: () =>
         get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
+      getItems: () => get().items,
     }),
     { name: "uk-lover-cart" }
   )
