@@ -7,6 +7,20 @@ import { uploadToCloudinary } from '@/lib/cloudinary'
 import { Product } from '@/lib/products'
 import { Upload, X, Edit2, Trash2, Save, Plus, Lock } from 'lucide-react'
 
+// Helper function to construct Cloudinary URLs
+const getImageUrl = (imageId: string): string => {
+  if (!imageId) return 'https://via.placeholder.com/400?text=No+Image'
+  
+  // If it's already a full URL, return it
+  if (imageId.startsWith('http://') || imageId.startsWith('https://')) {
+    return imageId
+  }
+  
+  // Otherwise construct Cloudinary URL
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'demo'
+  return `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_400,c_fill,q_auto,f_auto/${imageId}`
+}
+
 interface ProductFormData {
   id?: string
   name: string
@@ -87,8 +101,8 @@ export default function AdminPage() {
       
       for (const file of Array.from(files)) {
         console.log('Processing file:', file.name)
-        const imageUrl = await uploadToCloudinary(file)
-        console.log('Image uploaded successfully:', imageUrl)
+        const imagePublicId = await uploadToCloudinary(file)
+        console.log('Image uploaded successfully:', imagePublicId)
         
         // Extract basic info from filename
         const fileName = file.name.replace(/\.[^/.]+$/, '')
@@ -101,7 +115,7 @@ export default function AdminPage() {
           variant: parts.slice(2).join(' ') || 'Standard',
           price: 1500, // Default price
           category: 'Skincare',
-          image: imageUrl,
+          image: imagePublicId, // Store public_id, construct URL when displaying
           badge: 'New'
         }
         
@@ -477,9 +491,13 @@ export default function AdminPage() {
                 >
                   <div className="aspect-square bg-secondary rounded-lg mb-3 overflow-hidden">
                     <img
-                      src={product.image}
+                      src={getImageUrl(product.image)}
                       alt={product.name}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.error('Image failed to load:', product.image)
+                        e.currentTarget.src = 'https://via.placeholder.com/400?text=Image+Error'
+                      }}
                     />
                   </div>
                   

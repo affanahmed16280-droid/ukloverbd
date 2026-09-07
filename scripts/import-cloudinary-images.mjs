@@ -71,12 +71,14 @@ async function createProduct(imageResource) {
     variant: productInfo.variant,
     price: 1500, // Default price
     category: productInfo.category,
-    image: imageResource.public_id,
+    image: imageResource.public_id, // Store the public_id
     badge: 'New',
     createdAt: new Date().toISOString()
   };
 
+  console.log('Creating product with data:', productData);
   const docRef = await addDoc(collection(db, 'products'), productData);
+  console.log('Product created with ID:', docRef.id);
   return { id: docRef.id, ...productData };
 }
 

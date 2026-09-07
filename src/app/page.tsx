@@ -19,6 +19,20 @@ import { collection, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useCartStore } from '@/store/cartStore'
 
+// Helper function to construct Cloudinary URLs
+const getImageUrl = (imageId: string): string => {
+  if (!imageId) return 'https://via.placeholder.com/400?text=No+Image'
+  
+  // If it's already a full URL, return it
+  if (imageId.startsWith('http://') || imageId.startsWith('https://')) {
+    return imageId
+  }
+  
+  // Otherwise construct Cloudinary URL
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'demo'
+  return `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_400,c_fill,q_auto,f_auto/${imageId}`
+}
+
 const referenceAsset = (path: string, width = 1920) => `https://ukbrandlover.vercel.app/_next/image?url=${encodeURIComponent(path)}&w=${width}&q=75`
 
 const heroSlides = [
@@ -367,11 +381,7 @@ ${orderItems.map(item => `- ${item.name} (${item.quantity}x) - ${convertPrice(it
           <div className="flex items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">The edit</p><h2 className="mt-2 text-4xl text-foreground">Loved by our community</h2></div><div className="hidden items-center gap-1 text-xs text-muted-foreground sm:flex"><Star size={14} className="fill-accent text-accent" /> 4.8 average rating</div></div>
           
           {filteredProducts.length === 0 ? <p className="mt-8 rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">No beauty finds match your search yet.</p> : <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-5">{filteredProducts.map((product) => {
-            const imageUrl = product.image.startsWith('http') 
-              ? product.image 
-              : `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'demo'}/image/upload/w_400,h_400,c_fill,q_auto,f_auto/${product.image}`
-            
-            console.log('Rendering product:', product.name, 'Image URL:', imageUrl)
+            const imageUrl = getImageUrl(product.image)
             
             return (
               <article key={product.id} className="group">
@@ -381,8 +391,8 @@ ${orderItems.map(item => `- ${item.name} (${item.quantity}x) - ${convertPrice(it
                     alt={product.name} 
                     className="h-full w-full object-cover mix-blend-multiply transition-transform duration-500 group-hover:scale-105"
                     onError={(e) => {
-                      console.error('Image failed to load:', imageUrl)
-                      e.currentTarget.style.display = 'none'
+                      console.error('Image failed to load:', imageUrl, 'Product:', product.name)
+                      e.currentTarget.src = 'https://via.placeholder.com/400?text=Image+Error'
                     }}
                   />
                   <button type="button" onClick={() => handleAddToCart(product)} className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-card text-primary shadow-md transition-transform hover:scale-110" aria-label={`Add ${product.name} to cart`}><ShoppingBag size={16} /></button>
@@ -485,9 +495,12 @@ ${orderItems.map(item => `- ${item.name} (${item.quantity}x) - ${convertPrice(it
                     {cartItems.map((item) => (
                       <div key={item.id} className="flex items-center gap-3">
                         <img 
-                          src={item.image.startsWith('http') ? item.image : `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'demo'}/image/upload/w_100,h_100,c_fill,q_auto,f_auto/${item.image}`}
+                          src={getImageUrl(item.image)}
                           alt={item.name}
                           className="w-16 h-16 object-cover rounded-lg"
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://via.placeholder.com/100?text=Error'
+                          }}
                         />
                         <div className="flex-1">
                           <h4 className="font-medium text-sm">{item.name}</h4>
