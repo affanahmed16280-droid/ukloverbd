@@ -1,5 +1,5 @@
-const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "qvkox4mr";
-const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "unsigned_preset";
+const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
 export async function uploadToCloudinary(file: File): Promise<string> {
   console.log('=== Cloudinary Upload Debug ===');
@@ -7,17 +7,17 @@ export async function uploadToCloudinary(file: File): Promise<string> {
   console.log('Upload Preset:', UPLOAD_PRESET);
   console.log('File:', file.name, file.size, file.type);
   console.log('Environment check:', {
-    hasCloudName: !!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-    hasUploadPreset: !!process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET,
-    cloudNameValue: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-    uploadPresetValue: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+    hasCloudName: !!CLOUD_NAME,
+    hasUploadPreset: !!UPLOAD_PRESET,
+    cloudNameValue: CLOUD_NAME,
+    uploadPresetValue: UPLOAD_PRESET
   });
 
-  if (CLOUD_NAME === "undefined") {
+  if (!CLOUD_NAME) {
     throw new Error('Cloudinary cloud name is not configured. Please add NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME to your environment variables.');
   }
 
-  if (UPLOAD_PRESET === "unsigned_preset" || UPLOAD_PRESET === "undefined") {
+  if (!UPLOAD_PRESET) {
     throw new Error('Cloudinary upload preset is not configured. Please add NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET to your environment variables.');
   }
 
