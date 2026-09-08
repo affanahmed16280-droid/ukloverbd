@@ -29,7 +29,7 @@ const getImageUrl = (imageId: string): string => {
   }
   
   // Otherwise construct Cloudinary URL
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'demo'
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'qvkox4mr'
   return `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_400,c_fill,q_auto,f_auto/${imageId}`
 }
 
