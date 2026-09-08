@@ -15,6 +15,7 @@ import {
   MessageCircle,
 } from 'lucide-react'
 import { productFromFirestore, products, type Product } from '@/lib/products'
+import { PRODUCT_CATEGORIES, productMatchesCategory } from '@/lib/categories'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useCartStore } from '@/store/cartStore'
@@ -69,7 +70,7 @@ export default function Page() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [storeProducts, setStoreProducts] = useState<Product[]>(products)
   const [selectedCategory, setSelectedCategory] = useState('All Products')
-  const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'name'>('featured')
+  const [sortBy, setSortBy] = useState<'featured' | 'newest' | 'price-asc' | 'price-desc' | 'name'>('featured')
   const [currency, setCurrency] = useState<'BDT' | 'GBP'>('BDT')
   const [showOrderModal, setShowOrderModal] = useState(false)
   const [orderForm, setOrderForm] = useState({
@@ -94,29 +95,15 @@ export default function Page() {
       if (selectedCategory === 'Offers') {
         filtered = filtered.filter(product => product.badge && ['Sale', 'Best Seller', 'New'].includes(product.badge))
       } else {
-        // More lenient category matching
-        const categoryMap: Record<string, string> = {
-          'Sunscreen': 'Skincare',
-          'Facewash': 'Skincare', 
-          'Face Serum': 'Skincare',
-          'Cream': 'Skincare',
-          'Shampoo': 'Haircare',
-          'Jewelry': 'Jewelry',
-          'Baby Care': 'Baby Care'
-        }
-        
-        const targetCategory = categoryMap[selectedCategory] || selectedCategory
-        filtered = filtered.filter(product => {
-          const categoryMatch = product.category === targetCategory
-          const nameMatch = product.name.toLowerCase().includes(selectedCategory.toLowerCase())
-          const brandMatch = product.brand.toLowerCase().includes(selectedCategory.toLowerCase())
-          
-          return categoryMatch || nameMatch || brandMatch
-        })
+        filtered = filtered.filter(product => productMatchesCategory(product, selectedCategory))
       }
     }
     
     return [...filtered].sort((a, b) => {
+      if (sortBy === 'newest') {
+        const createdAt = (product: Product) => (product as Product & { createdAt?: number }).createdAt || 0
+        return createdAt(b) - createdAt(a)
+      }
       if (sortBy === 'name') return a.name.localeCompare(b.name)
 
       if (sortBy === 'price-asc' || sortBy === 'price-desc') {
@@ -231,6 +218,11 @@ ${orderItems.map(item => `- ${item.name} (${item.quantity}x) - ${convertPrice(it
 
   const nextSlide = () => setActiveSlide((current) => (current + 1) % heroSlides.length)
   const previousSlide = () => setActiveSlide((current) => (current - 1 + heroSlides.length) % heroSlides.length)
+
+  const selectCategory = (category: string) => {
+    setSelectedCategory(category)
+    document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })
+  }
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -401,8 +393,20 @@ ${orderItems.map(item => `- ${item.name} (${item.quantity}x) - ${convertPrice(it
 
         <section id="shop" className="mt-20 scroll-mt-28">
           <div className="flex items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">Find your ritual</p><h2 className="mt-2 text-4xl text-foreground">Shop by category</h2></div><a href="#products" className="hidden items-center gap-2 text-sm font-semibold text-primary sm:flex">View all <ArrowRight size={15} /></a></div>
+          <div className="mt-6 flex flex-wrap gap-2">
+            {PRODUCT_CATEGORIES.map((category) => (
+              <button
+                key={category}
+                type="button"
+                onClick={() => selectCategory(category)}
+                className={`rounded-full border px-3 py-2 text-xs font-semibold transition-colors ${selectedCategory === category ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-foreground hover:border-primary/50'}`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
           <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-5">
-            {categories.map((category) => <a href="#products" key={category.name} className="group relative aspect-[0.9] overflow-hidden rounded-[22px] bg-secondary"><img src={category.image} alt={`${category.name} category`} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" /><div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/70 to-transparent p-4 pt-12 text-primary-foreground"><p className="text-lg font-semibold">{category.name}</p><p className="mt-1 text-xs text-primary-foreground/75">{category.caption}</p></div></a>)}
+            {categories.map((category) => <button type="button" onClick={() => selectCategory(category.name)} key={category.name} className="group relative aspect-[0.9] overflow-hidden rounded-[22px] bg-secondary text-left"><img src={category.image} alt={`${category.name} category`} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" /><div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/70 to-transparent p-4 pt-12 text-primary-foreground"><p className="text-lg font-semibold">{category.name}</p><p className="mt-1 text-xs text-primary-foreground/75">{category.caption}</p></div></button>)}
           </div>
         </section>
 
@@ -419,6 +423,7 @@ ${orderItems.map(item => `- ${item.name} (${item.quantity}x) - ${convertPrice(it
                 <span className="text-muted-foreground">Sort by</span>
                 <select value={sortBy} onChange={(event) => setSortBy(event.target.value as typeof sortBy)} className="cursor-pointer bg-transparent pr-1 outline-none">
                   <option value="featured">Featured</option>
+                  <option value="newest">Newest</option>
                   <option value="price-asc">Price: low to high</option>
                   <option value="price-desc">Price: high to low</option>
                   <option value="name">Name: A to Z</option>

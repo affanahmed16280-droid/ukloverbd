@@ -5,6 +5,7 @@ import { collection, addDoc, updateDoc, doc, deleteDoc, getDocs, query, orderBy 
 import { db } from '@/lib/firebase'
 import { uploadToCloudinary } from '@/lib/cloudinary'
 import { Product } from '@/lib/products'
+import { PRODUCT_CATEGORIES } from '@/lib/categories'
 import { Upload, X, Edit2, Trash2, Save, Plus, Lock } from 'lucide-react'
 
 // Helper function to construct Cloudinary URLs
@@ -32,6 +33,7 @@ interface ProductFormData {
   category: string
   image: string
   badge?: string
+  createdAt?: number
 }
 
 export default function AdminPage() {
@@ -44,7 +46,6 @@ export default function AdminPage() {
   const [password, setPassword] = useState('')
   const [authError, setAuthError] = useState('')
 
-  const categories = ['Skincare', 'Body Care', 'Haircare', 'Cosmetics', 'Baby Care', 'Jewelry']
   const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD
 
   const loadProducts = useCallback(async () => {
@@ -122,7 +123,7 @@ export default function AdminPage() {
         const fileName = file.name.replace(/\.[^/.]+$/, '')
         const parts = fileName.split(/[-_]/)
         
-        const newProduct: Product = {
+        const newProduct = {
           id: Date.now().toString() + Math.random(),
           name: parts[0] || 'New Product',
           brand: parts[1] || 'UK Brand',
@@ -130,8 +131,9 @@ export default function AdminPage() {
           price: 1500, // Default price
           category: 'Skincare',
           image: imagePublicId, // Store public_id, construct URL when displaying
-          badge: 'New'
-        }
+          badge: 'New',
+          createdAt: Date.now()
+        } as Product & { createdAt: number }
         
         uploadedProducts.push(newProduct)
         console.log('Product created:', newProduct)
@@ -171,7 +173,8 @@ export default function AdminPage() {
         price: parseFloat(formData.price),
         category: formData.category,
         image: formData.image,
-        badge: formData.badge
+        badge: formData.badge,
+        createdAt: formData.createdAt || Date.now()
       }
 
       if (formData.id) {
@@ -214,7 +217,8 @@ export default function AdminPage() {
       price: product.price.toString(),
       category: product.category,
       image: product.image,
-      badge: product.badge
+      badge: product.badge,
+      createdAt: (product as Product & { createdAt?: number }).createdAt
     })
   }
 
@@ -225,7 +229,8 @@ export default function AdminPage() {
       variant: '',
       price: '',
       category: 'Skincare',
-      image: ''
+      image: '',
+      createdAt: Date.now()
     })
     setIsAddingNew(true)
   }
@@ -420,7 +425,7 @@ export default function AdminPage() {
                     className="w-full px-4 py-2 border border-border rounded-lg bg-background"
                     required
                   >
-                    {categories.map(cat => (
+                    {PRODUCT_CATEGORIES.map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>

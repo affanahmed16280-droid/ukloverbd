@@ -4,17 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { Search, User, Heart, ShoppingBag, Settings } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
+import { PRODUCT_CATEGORIES } from "@/lib/categories";
 
 const categories = [
   "All Products",
   "Offers",
-  "Sunscreen",
-  "Facewash",
-  "Face Serum",
-  "Cream",
-  "Shampoo",
-  "Jewelry",
-  "Baby Care",
+  ...PRODUCT_CATEGORIES,
 ];
 
 export default function Header() {
