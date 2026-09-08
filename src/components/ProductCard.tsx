@@ -13,6 +13,12 @@ export default function ProductCard({ product }: ProductCardProps) {
   const addItem = useCartStore((s) => s.addItem);
 
   const handleAdd = () => {
+    if (product.price <= 0) {
+      const message = `Hi, please share the current price for ${product.name}.`;
+      window.open(`https://wa.me/8801959524393?text=${encodeURIComponent(message)}`, "_blank");
+      return;
+    }
+
     addItem({
       id: product.id,
       brand: product.brand,
@@ -121,7 +127,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             className="text-base font-bold"
             style={{ color: "var(--plum)", fontFamily: "var(--font-sans)" }}
           >
-            ৳{product.price.toLocaleString()}
+            {product.price > 0 ? `৳${product.price.toLocaleString()}` : "Price on request"}
           </span>
           {product.originalPrice && (
             <span

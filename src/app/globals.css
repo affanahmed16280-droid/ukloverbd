@@ -90,9 +90,23 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 8% 0%, rgb(197 143 174 / 0.14), transparent 26rem),
+      radial-gradient(circle at 92% 18%, rgb(125 94 154 / 0.08), transparent 30rem);
+    text-rendering: optimizeLegibility;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-display font-bold;
+  }
+
+  button, a, input, textarea, select {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  ::selection {
+    background: var(--primary);
+    color: var(--primary-foreground);
   }
 }
 
@@ -116,5 +130,18 @@
   .hover-lift:hover {
     transform: translateY(-0.25rem);
     box-shadow: 0 10px 25px rgb(42 42 42 / 0.10);
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .surface-shadow {
+    box-shadow: 0 18px 55px rgb(73 46 83 / 0.10);
   }
 }

@@ -1,128 +1,125 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { doc, getFirestore, serverTimestamp, setDoc } from "firebase/firestore";
+import { createHash } from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 
-// Firebase Configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDL23dqKxfGBkLcxjGqKfnwInzIpg0235g",
+  apiKey: "AIzaSyDL23dqKxfGBkLcxGqjKfnwInzIpg0235g",
   authDomain: "ukloverbangla.firebaseapp.com",
   projectId: "ukloverbangla",
   storageBucket: "ukloverbangla.firebasestorage.app",
   messagingSenderId: "64007694018",
-  appId: "1:64007694018:web:728f3e9969cf670a193d5b"
+  appId: "1:64007694018:web:728f3e9969cf670a193d5b",
 };
 
-// Cloudinary Configuration
-const CLOUD_NAME = "c-6cf15ba3c89242d90ff394122743dc";
-const API_KEY = process.env.CLOUDINARY_API_KEY;
-const API_SECRET = process.env.CLOUDINARY_API_SECRET;
+const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+const apiKey = process.env.CLOUDINARY_API_KEY || process.env["\uFEFFCLOUDINARY_API_KEY"];
+const apiSecret = process.env.CLOUDINARY_API_SECRET;
+const includeNonProductAssets = process.argv.includes("--include-non-product-assets");
+const imagesFolder = path.resolve(process.cwd(), "product-images");
 
-// Initialize Firebase
+if (!cloudName || !apiKey || !apiSecret) {
+  throw new Error("CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET must be set.");
+}
+
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
 
-// Function to get all images from Cloudinary
-async function getCloudinaryImages() {
-  if (!API_KEY || !API_SECRET) {
-    throw new Error('CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET must be set in environment variables');
-  }
-
-  const auth = Buffer.from(`${API_KEY}:${API_SECRET}`).toString('base64');
-  
-  const response = await fetch(
-    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/resources/image`,
-    {
-      headers: {
-        'Authorization': `Basic ${auth}`
-      }
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch Cloudinary images: ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  return data.resources || [];
+function normalizeAssetName(value) {
+  return value.toLowerCase().replace(/[ _()\-]+/g, "");
 }
 
-// Function to extract product info from filename
-function extractProductInfo(filename) {
-  // Remove extension
-  const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
-  
-  // Split by common separators
-  const parts = nameWithoutExt.split(/[-_\s]/);
-  
+function stableId(filename) {
+  return createHash("sha256").update(filename).digest("hex").slice(0, 20);
+}
+
+function isNonProductAsset(filename) {
+  return /^(logo|hero[- ]?cover)/i.test(path.parse(filename).name);
+}
+
+function productMetadata(filename) {
+  const baseName = path.parse(filename).name.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
+  const comparable = baseName.toLowerCase();
+  const category = /(churi|bangle|bracelet|jewelry|jewellery)/.test(comparable)
+    ? "Jewelry"
+    : /(makeup|make up|mesta)/.test(comparable)
+      ? "Cosmetics"
+      : /(shampoo|hair)/.test(comparable)
+        ? "Haircare"
+        : /(shower gel|toothpaste|lotion|body wash)/.test(comparable)
+          ? "Body Care"
+          : "Skincare";
+
   return {
-    name: parts[0] || 'Product',
-    brand: parts[1] || 'UK Brand',
-    variant: parts.slice(2).join(' ') || 'Standard',
-    category: 'Skincare' // Default category
+    name: baseName.replace(/\b\w/g, (letter) => letter.toUpperCase()) || "Unnamed product",
+    brand: "UK Brand Lover",
+    variant: "",
+    price: 0,
+    category,
+    badge: "New",
+    needsReview: true,
+    sourceFilename: filename,
   };
 }
 
-// Function to create product in Firestore
-async function createProduct(imageResource) {
-  const productInfo = extractProductInfo(imageResource.public_id);
-  
+async function getCloudinaryImages() {
+  const authorization = Buffer.from(`${apiKey}:${apiSecret}`).toString("base64");
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/resources/image?max_results=500`,
+    { headers: { Authorization: `Basic ${authorization}` } }
+  );
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(body.error?.message || `Cloudinary request failed (${response.status})`);
+
+  const localFiles = fs.readdirSync(imagesFolder).filter((filename) => /\.(jpg|jpeg|png|webp|gif)$/i.test(filename));
+  const localByName = new Map(localFiles.map((filename) => [normalizeAssetName(path.parse(filename).name), filename]));
+  return (body.resources || [])
+    .filter((resource) => !resource.public_id.includes("/"))
+    .map((resource) => ({ resource, filename: localByName.get(normalizeAssetName(resource.public_id)) }))
+    .filter((item) => item.filename);
+}
+
+async function createOrUpdateProduct(imageResource, filename) {
+  const documentId = `image-${stableId(filename)}`;
   const productData = {
-    name: productInfo.name,
-    brand: productInfo.brand,
-    variant: productInfo.variant,
-    price: 1500, // Default price
-    category: productInfo.category,
-    image: imageResource.public_id, // Store the public_id
-    badge: 'New',
-    createdAt: new Date().toISOString()
+    ...productMetadata(filename),
+    image: imageResource.public_id,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
   };
-
-  console.log('Creating product with data:', productData);
-  const docRef = await addDoc(collection(db, 'products'), productData);
-  console.log('Product created with ID:', docRef.id);
-  return { id: docRef.id, ...productData };
+  await setDoc(doc(db, "products", documentId), productData, { merge: true });
+  return documentId;
 }
 
-// Main import function
 async function importCloudinaryImages() {
-  try {
-    console.log('🚀 Starting Cloudinary image import...');
-    console.log('📦 Cloud Name:', CLOUD_NAME);
-    
-    // Get all images from Cloudinary
-    console.log('📥 Fetching images from Cloudinary...');
-    const images = await getCloudinaryImages();
-    console.log(`✅ Found ${images.length} images in Cloudinary`);
-    
-    if (images.length === 0) {
-      console.log('⚠️  No images found in Cloudinary');
-      return;
-    }
+  console.log(`Fetching project assets from Cloudinary environment ${cloudName}...`);
+  const images = await getCloudinaryImages();
+  console.log(`Matched ${images.length} of the local project images.`);
 
-    // Import each image as a product
-    console.log('📝 Creating products in Firestore...');
-    let successCount = 0;
-    let errorCount = 0;
-    
-    for (const image of images) {
-      try {
-        const product = await createProduct(image);
-        console.log(`✅ Created product: ${product.name} (${image.public_id})`);
-        successCount++;
-      } catch (error) {
-        console.error(`❌ Failed to create product for ${image.public_id}:`, error.message);
-        errorCount++;
-      }
+  let successCount = 0;
+  let skippedCount = 0;
+  let errorCount = 0;
+  for (const { resource, filename } of images) {
+    if (!includeNonProductAssets && isNonProductAsset(filename)) {
+      skippedCount += 1;
+      console.log(`Skipped non-product asset: ${filename}`);
+      continue;
     }
-
-    console.log('\n🎉 Import completed!');
-    console.log(`✅ Successfully imported: ${successCount} products`);
-    console.log(`❌ Failed: ${errorCount} products`);
-    
-  } catch (error) {
-    console.error('❌ Import failed:', error.message);
-    process.exit(1);
+    try {
+      const id = await createOrUpdateProduct(resource, filename);
+      console.log(`Saved ${filename} (${id})`);
+      successCount += 1;
+    } catch (error) {
+      errorCount += 1;
+      console.error(`Failed to save ${filename}: ${error.message}`);
+    }
   }
+  console.log({ matched: images.length, productsSaved: successCount, skipped: skippedCount, failed: errorCount });
+  process.exitCode = errorCount ? 1 : 0;
 }
 
-// Run the import
-importCloudinaryImages();
+importCloudinaryImages().catch((error) => {
+  console.error(`Import failed: ${error.message}`);
+  process.exitCode = 1;
+});

@@ -101,7 +101,7 @@ The admin panel is password protected. Set your admin password in `.env.local`:
 NEXT_PUBLIC_ADMIN_PASSWORD=your_secure_password
 ```
 
-Default password is `admin123`. Change this for security!
+There is no built-in default password. Keep this value private and configure it only through the deployment environment.
 
 ## Upload Product Images
 

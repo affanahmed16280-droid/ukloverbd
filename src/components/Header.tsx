@@ -21,6 +21,7 @@ export default function Header() {
   const { toggleCart, totalItems } = useCartStore();
   const count = totalItems();
   const [selectedCategory, setSelectedCategory] = useState("All Products");
+  const [search, setSearch] = useState("");
 
   const handleCategoryClick = (category: string) => {
     setSelectedCategory(category);
@@ -28,9 +29,14 @@ export default function Header() {
     window.dispatchEvent(new CustomEvent('categoryChange', { detail: category }));
   };
 
+  const handleSearch = (value: string) => {
+    setSearch(value);
+    window.dispatchEvent(new CustomEvent("searchChange", { detail: value }));
+  };
+
   return (
     <header
-      className="sticky top-0 z-40 border-b"
+      className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur-xl"
       style={{
         backgroundColor: "var(--cream)",
         borderColor: "var(--cream-darker)",
@@ -38,11 +44,11 @@ export default function Header() {
     >
       {/* Main header row */}
       <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12">
-        <div className="flex items-center justify-between gap-8 h-20">
+        <div className="flex h-[76px] items-center justify-between gap-8">
           {/* Brand */}
           <Link href="/" className="flex-shrink-0">
             <div
-              className="text-2xl font-black leading-none tracking-tighter"
+              className="text-[1.45rem] font-black leading-none tracking-[-0.06em]"
               style={{ fontFamily: "var(--font-sans)", color: "var(--plum)" }}
             >
               UK Brand Lover
@@ -58,7 +64,7 @@ export default function Header() {
           {/* Search bar */}
           <div className="flex-1 max-w-xl hidden md:block mx-8">
             <div
-              className="flex items-center gap-3 rounded-full px-5 py-2.5 w-full"
+              className="flex w-full items-center gap-3 rounded-full border border-transparent px-5 py-3 transition-colors focus-within:border-primary/30 focus-within:bg-card"
               style={{
                 backgroundColor: "var(--cream-dark)",
                 color: "var(--text-muted)",
@@ -66,7 +72,9 @@ export default function Header() {
             >
               <Search size={16} strokeWidth={1.5} />
               <input
-                type="text"
+                type="search"
+                value={search}
+                onChange={(event) => handleSearch(event.target.value)}
                 placeholder="Search Boots, Cetaphil, CeraVe..."
                 className="bg-transparent border-none outline-none text-sm w-full font-medium placeholder-gray-400"
                 style={{ fontFamily: "var(--font-sans)", color: "var(--plum)" }}
@@ -83,7 +91,10 @@ export default function Header() {
 
             {/* User */}
             <button
-              className="p-1 transition-opacity hover:opacity-60"
+              type="button"
+              title="Account"
+              aria-label="Account"
+              className="hidden p-2 transition-all hover:-translate-y-0.5 hover:text-accent sm:block"
               style={{ color: "var(--plum)" }}
             >
               <User size={20} strokeWidth={1.5} />
@@ -91,7 +102,10 @@ export default function Header() {
 
             {/* Wishlist */}
             <button
-              className="p-1 transition-opacity hover:opacity-60"
+              type="button"
+              title="Wishlist"
+              aria-label="Wishlist"
+              className="hidden p-2 transition-all hover:-translate-y-0.5 hover:text-accent sm:block"
               style={{ color: "var(--plum)" }}
             >
               <Heart size={20} strokeWidth={1.5} />
@@ -100,7 +114,7 @@ export default function Header() {
             {/* Cart */}
             <button
               onClick={toggleCart}
-              className="relative p-1 transition-opacity hover:opacity-60 cursor-pointer"
+              className="relative rounded-full p-2 transition-all hover:-translate-y-0.5 hover:bg-secondary cursor-pointer"
               style={{ color: "var(--plum)" }}
             >
               <ShoppingBag size={20} strokeWidth={1.5} />
@@ -130,7 +144,9 @@ export default function Header() {
               <button
                 key={cat}
                 onClick={() => handleCategoryClick(cat)}
-                className="flex-shrink-0 text-xs font-semibold px-5 py-2 rounded-full transition-all cursor-pointer"
+                type="button"
+                aria-pressed={selectedCategory === cat}
+                className="flex-shrink-0 text-xs font-semibold px-5 py-2 rounded-full transition-all cursor-pointer hover:-translate-y-0.5"
                 style={
                   selectedCategory === cat
                     ? {

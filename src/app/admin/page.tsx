@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { collection, addDoc, updateDoc, doc, deleteDoc, getDocs, query, orderBy } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { uploadToCloudinary } from '@/lib/cloudinary'
@@ -9,10 +9,7 @@ import { Upload, X, Edit2, Trash2, Save, Plus, Lock } from 'lucide-react'
 
 // Helper function to construct Cloudinary URLs
 const getImageUrl = (imageId: string): string => {
-  console.log('Getting image URL for:', imageId)
-  
   if (!imageId || imageId === 'undefined' || imageId === 'null') {
-    console.log('Invalid image ID, using placeholder')
     return 'https://via.placeholder.com/400?text=No+Image'
   }
   
@@ -23,9 +20,7 @@ const getImageUrl = (imageId: string): string => {
   
   // Otherwise construct Cloudinary URL
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'demo'
-  const url = `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_400,c_fill,q_auto,f_auto/${imageId}`
-  console.log('Constructed URL:', url)
-  return url
+  return `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_400,c_fill,q_auto,f_auto/${imageId}`
 }
 
 interface ProductFormData {
@@ -50,21 +45,51 @@ export default function AdminPage() {
   const [authError, setAuthError] = useState('')
 
   const categories = ['Skincare', 'Body Care', 'Haircare', 'Cosmetics', 'Baby Care', 'Jewelry']
-  const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'ukbrandloverbdacc'
+  const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD
 
-  useEffect(() => {
-    // Check if already authenticated in session
-    const auth = sessionStorage.getItem('adminAuth')
-    if (auth === 'true') {
-      setIsAuthenticated(true)
-      loadProducts()
-    } else {
+  const loadProducts = useCallback(async () => {
+    setLoading(true)
+    try {
+      const q = query(collection(db, 'products'), orderBy('name'))
+      const snapshot = await getDocs(q)
+      const loadedProducts = snapshot.docs.map(document => ({
+        id: document.id,
+        ...document.data()
+      } as Product))
+      setProducts(loadedProducts)
+    } catch (error) {
+      console.error('Error loading products:', error)
+      alert('Failed to load products')
+    } finally {
       setLoading(false)
     }
   }, [])
 
+  useEffect(() => {
+    let active = true
+    const initializeAdmin = async () => {
+      await Promise.resolve()
+      if (!active) return
+      if (sessionStorage.getItem('adminAuth') === 'true') {
+        setIsAuthenticated(true)
+        void loadProducts()
+      } else {
+        setLoading(false)
+      }
+    }
+    void initializeAdmin()
+    return () => {
+      active = false
+    }
+  }, [loadProducts])
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!ADMIN_PASSWORD) {
+      setAuthError('Admin access is not configured. Add NEXT_PUBLIC_ADMIN_PASSWORD to the environment.')
+      return
+    }
+
     if (password === ADMIN_PASSWORD) {
       setIsAuthenticated(true)
       sessionStorage.setItem('adminAuth', 'true')
@@ -79,24 +104,6 @@ export default function AdminPage() {
     setIsAuthenticated(false)
     sessionStorage.removeItem('adminAuth')
     setPassword('')
-  }
-
-  const loadProducts = async () => {
-    setLoading(true)
-    try {
-      const q = query(collection(db, 'products'), orderBy('name'))
-      const snapshot = await getDocs(q)
-      const loadedProducts = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as Product))
-      setProducts(loadedProducts)
-    } catch (error) {
-      console.error('Error loading products:', error)
-      alert('Failed to load products')
-    } finally {
-      setLoading(false)
-    }
   }
 
   const handleImageUpload = async (files: FileList) => {
@@ -261,18 +268,9 @@ export default function AdminPage() {
             </button>
           </form>
 
-          <div className="mt-6 text-center text-xs text-muted-foreground">
-            <p>Admin password: ukbrandloverbdacc</p>
-            <p className="mt-1">Configured in environment variables</p>
-          </div>
-
-          {/* Debug Information */}
-          <div className="mt-6 p-4 bg-secondary rounded-lg text-xs">
-            <p className="font-semibold mb-2">Debug Info:</p>
-            <p>Cloud Name: {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'Not set'}</p>
-            <p>Upload Preset: {process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'Not set'}</p>
-            <p>Firebase Project: {process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'Not set'}</p>
-          </div>
+          <p className="mt-6 text-center text-xs text-muted-foreground">
+            Admin access is configured privately through the deployment environment.
+          </p>
         </div>
       </div>
     )
@@ -430,13 +428,14 @@ export default function AdminPage() {
 
                 <div>
                   <label className="block text-sm font-medium mb-2">Image URL</label>
-                  <input
-                    type="url"
+                    <input
+                      type="text"
                     value={editingProduct.image}
                     onChange={(e) => setEditingProduct({ ...editingProduct, image: e.target.value })}
                     className="w-full px-4 py-2 border border-border rounded-lg bg-background"
                     required
                   />
+                  <p className="mt-1 text-xs text-muted-foreground">Paste a Cloudinary public ID or full image URL.</p>
                   {editingProduct.image && (
                     <img
                       src={editingProduct.image}

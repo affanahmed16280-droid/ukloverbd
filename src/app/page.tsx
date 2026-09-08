@@ -85,15 +85,9 @@ export default function Page() {
   const slide = heroSlides[activeSlide]
   
   const filteredProducts = useMemo(() => {
-    console.log('Total products in store:', storeProducts.length)
-    console.log('Selected category:', selectedCategory)
-    console.log('Search query:', query)
-    
     let filtered = storeProducts.filter((product) =>
       `${product.name} ${product.brand} ${product.category}`.toLowerCase().includes(query.toLowerCase())
     )
-    
-    console.log('After search filter:', filtered.length)
     
     if (selectedCategory !== 'All Products') {
       if (selectedCategory === 'Offers') {
@@ -106,7 +100,7 @@ export default function Page() {
           'Face Serum': 'Skincare',
           'Cream': 'Skincare',
           'Shampoo': 'Haircare',
-          'Jewelry': 'Accessories',
+          'Jewelry': 'Jewelry',
           'Baby Care': 'Baby Care'
         }
         
@@ -120,9 +114,6 @@ export default function Page() {
         })
       }
     }
-    
-    console.log('After category filter:', filtered.length)
-    console.log('Filtered products:', filtered.map(p => ({ name: p.name, category: p.category, image: p.image })))
     
     return filtered
   }, [query, selectedCategory, storeProducts])
@@ -176,29 +167,19 @@ ${orderItems.map(item => `- ${item.name} (${item.quantity}x) - ${convertPrice(it
 
     async function loadProducts() {
       try {
-        console.log('Loading products from Firestore...')
         const snapshot = await getDocs(collection(db, "products"))
-        console.log('Firestore snapshot size:', snapshot.docs.length)
         
         const firestoreProducts = snapshot.docs
-          .map((document) => {
-            console.log('Processing document:', document.id, document.data())
-            return productFromFirestore(document.id, document.data())
-          })
+          .map((document) => productFromFirestore(document.id, document.data()))
           .filter((product): product is Product => product !== null)
-
-        console.log('Valid products loaded:', firestoreProducts.length)
-        console.log('Products:', firestoreProducts.map(p => ({ name: p.name, image: p.image })))
 
         if (active && firestoreProducts.length > 0) {
           setStoreProducts(firestoreProducts)
         } else if (active) {
-          console.log('No valid products found, using fallback products')
           setStoreProducts(products)
         }
       } catch (error) {
         console.error("Unable to load products from Firestore", error)
-        console.log('Using fallback products due to error')
         if (active) {
           setStoreProducts(products)
         }
@@ -218,17 +199,38 @@ ${orderItems.map(item => `- ${item.name} (${item.quantity}x) - ${convertPrice(it
       setSelectedCategory(event.detail)
     }
 
+    const handleSearchChange = (event: CustomEvent) => {
+      setQuery(event.detail)
+    }
+
     window.addEventListener('categoryChange', handleCategoryChange as EventListener)
+    window.addEventListener('searchChange', handleSearchChange as EventListener)
 
     return () => {
       window.removeEventListener('categoryChange', handleCategoryChange as EventListener)
+      window.removeEventListener('searchChange', handleSearchChange as EventListener)
     }
   }, [])
 
   const nextSlide = () => setActiveSlide((current) => (current + 1) % heroSlides.length)
   const previousSlide = () => setActiveSlide((current) => (current - 1 + heroSlides.length) % heroSlides.length)
 
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        setActiveSlide((current) => (current + 1) % heroSlides.length)
+      }
+    }, 6500)
+    return () => window.clearInterval(timer)
+  }, [])
+
   const handleAddToCart = (product: Product) => {
+    if (product.price <= 0) {
+      const message = `Hi, please share the current price for ${product.name}.`
+      window.open(`https://wa.me/8801959524393?text=${encodeURIComponent(message)}`, '_blank')
+      return
+    }
+
     cartStore.addItem({
       id: product.id,
       brand: product.brand,
@@ -302,11 +304,7 @@ ${orderItems.map(item => `- ${item.name} (${item.quantity}x) - ${convertPrice(it
 
             <button 
               type="button" 
-              onClick={() => {
-                if (count > 0) {
-                  setShowOrderModal(true)
-                }
-              }}
+              onClick={() => cartStore.openCart()}
               className="flex items-center gap-2 text-sm font-medium" 
               aria-label={`Shopping cart with ${count} item`}
             >
@@ -321,12 +319,20 @@ ${orderItems.map(item => `- ${item.name} (${item.quantity}x) - ${convertPrice(it
           </button>
         </div>
         {menuOpen && (
-          <div className="border-t border-border bg-card px-5 py-4 md:hidden">
+          <div className="border-t border-border bg-card/95 px-5 py-5 shadow-lg md:hidden">
+            <label className="mb-4 flex h-11 items-center gap-3 rounded-full border border-border bg-secondary/40 px-4 text-muted-foreground focus-within:border-primary/50">
+              <Search size={16} aria-hidden="true" />
+              <span className="sr-only">Search beauty products</span>
+              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the edit..." className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
+            </label>
             <nav className="flex flex-col gap-4 text-sm font-medium" aria-label="Mobile navigation">
               <a href="#top" onClick={() => setMenuOpen(false)}>Home</a>
               <a href="#shop" onClick={() => setMenuOpen(false)}>Shop</a>
               <a href="#contact" onClick={() => setMenuOpen(false)}>Contact</a>
             </nav>
+            <button type="button" onClick={() => { cartStore.openCart(); setMenuOpen(false) }} className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground">
+              <ShoppingBag size={16} /> View cart {count > 0 ? `(${count})` : ''}
+            </button>
           </div>
         )}
       </header>
@@ -335,7 +341,13 @@ ${orderItems.map(item => `- ${item.name} (${item.quantity}x) - ${convertPrice(it
         <section className="relative overflow-hidden rounded-[28px] border border-border bg-secondary shadow-[0_14px_50px_rgba(125,94,154,0.10)]">
           <div className="relative min-h-[390px] overflow-hidden sm:min-h-[500px] lg:min-h-[540px]">
             <img src={slide.image} alt="Premium cosmetics arranged in a soft lilac beauty setting" className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500" />
-            <div className="absolute inset-0 bg-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#21172a]/90 via-[#21172a]/45 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 top-0 z-10 flex max-w-2xl flex-col justify-center px-7 py-14 text-white sm:px-12 lg:px-16">
+              <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.24em] text-white/75">{slide.eyebrow}</p>
+              <h1 className="max-w-xl text-4xl leading-[1.05] tracking-[-0.04em] sm:text-6xl">{slide.title}</h1>
+              <p className="mt-5 max-w-md text-sm leading-6 text-white/80 sm:text-base">{slide.copy}</p>
+              <a href="#products" className="mt-7 inline-flex w-fit items-center gap-2 rounded-full bg-white px-5 py-3 text-xs font-bold text-primary shadow-lg transition-transform hover:-translate-y-0.5">Shop the edit <ArrowRight size={15} /></a>
+            </div>
             <div className="sr-only">
               <h1>{slide.title}</h1>
               <p>{slide.eyebrow}. {slide.copy}</p>
@@ -395,11 +407,11 @@ ${orderItems.map(item => `- ${item.name} (${item.quantity}x) - ${convertPrice(it
                       e.currentTarget.src = 'https://via.placeholder.com/400?text=Image+Error'
                     }}
                   />
-                  <button type="button" onClick={() => handleAddToCart(product)} className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-card text-primary shadow-md transition-transform hover:scale-110" aria-label={`Add ${product.name} to cart`}><ShoppingBag size={16} /></button>
+                  <button type="button" onClick={() => handleAddToCart(product)} className="absolute bottom-3 right-3 flex h-10 w-10 items-center justify-center rounded-full bg-card text-primary shadow-[0_8px_24px_rgba(42,26,52,0.18)] transition-all hover:-translate-y-0.5 hover:bg-primary hover:text-primary-foreground" aria-label={product.price > 0 ? `Add ${product.name} to cart` : `Ask the price for ${product.name} on WhatsApp`}><ShoppingBag size={16} /></button>
                 </div>
                 <p className="mt-4 text-[10px] font-bold uppercase tracking-wider text-accent">{product.brand}</p>
                 <h3 className="mt-1 text-sm font-semibold text-foreground sm:text-base">{product.name}</h3>
-                <div className="mt-2 flex items-center justify-between"><p className="text-sm font-semibold text-primary">{convertPrice(product.price)}</p><span className="flex items-center gap-1 text-[11px] text-muted-foreground"><Star size={12} className="fill-accent text-accent" /> 4.8</span></div>
+                <div className="mt-2 flex items-center justify-between"><p className="text-sm font-semibold text-primary">{product.price > 0 ? convertPrice(product.price) : 'Price on request'}</p><span className="flex items-center gap-1 text-[11px] text-muted-foreground"><Star size={12} className="fill-accent text-accent" /> 4.8</span></div>
               </article>
             )
           })}</div>}

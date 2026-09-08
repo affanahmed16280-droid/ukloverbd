@@ -9,7 +9,10 @@
     "lint": "eslint",
     "upload": "node --env-file=.env.local scripts/bulk-upload.mjs",
     "import-cloudinary": "node --env-file=.env.local scripts/import-cloudinary-images.mjs",
-    "fix-images": "node --env-file=.env.local scripts/fix-product-images.mjs"
+    "fix-images": "node --env-file=.env.local scripts/fix-product-images.mjs",
+    "add-samples": "node --env-file=.env.local scripts/simple-import.mjs",
+    "batch-upload": "node --env-file=.env.local scripts/batch-upload.mjs",
+    "test-cloudinary": "node --env-file=.env.local scripts/test-cloudinary-credentials.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
