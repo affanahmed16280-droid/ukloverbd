@@ -1,7 +1,15 @@
-const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "qvkox4mr";
-const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "unsigned_preset";
+const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
 export async function uploadToCloudinary(file: File): Promise<string> {
+  if (process.env.NODE_ENV !== 'production') {
+    console.debug('Cloudinary Upload Debug:', {
+      cloudName: CLOUD_NAME,
+      uploadPreset: UPLOAD_PRESET,
+      file: file ? { name: file.name, size: file.size, type: file.type } : undefined
+    });
+  }
+
   if (!CLOUD_NAME || CLOUD_NAME === "undefined") {
     throw new Error('Cloudinary cloud name is not configured. Please add NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME to your environment variables.');
   }
