@@ -69,6 +69,7 @@ export default function Page() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [storeProducts, setStoreProducts] = useState<Product[]>(products)
   const [selectedCategory, setSelectedCategory] = useState('All Products')
+  const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'name'>('featured')
   const [currency, setCurrency] = useState<'BDT' | 'GBP'>('BDT')
   const [showOrderModal, setShowOrderModal] = useState(false)
   const [orderForm, setOrderForm] = useState({
@@ -115,8 +116,24 @@ export default function Page() {
       }
     }
     
-    return filtered
-  }, [query, selectedCategory, storeProducts])
+    return [...filtered].sort((a, b) => {
+      if (sortBy === 'name') return a.name.localeCompare(b.name)
+
+      if (sortBy === 'price-asc' || sortBy === 'price-desc') {
+        const aPrice = a.price > 0 ? a.price : sortBy === 'price-asc' ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY
+        const bPrice = b.price > 0 ? b.price : sortBy === 'price-asc' ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY
+        return sortBy === 'price-asc' ? aPrice - bPrice : bPrice - aPrice
+      }
+
+      const rank = (product: Product) => {
+        if (product.badge === 'Best Seller') return 0
+        if (product.badge === 'Sale') return 1
+        if (product.badge === 'New' || product.badge === 'New Arrival') return 2
+        return 3
+      }
+      return rank(a) - rank(b)
+    })
+  }, [query, selectedCategory, sortBy, storeProducts])
 
   const convertPrice = (price: number) => {
     if (currency === 'GBP') {
@@ -390,7 +407,25 @@ ${orderItems.map(item => `- ${item.name} (${item.quantity}x) - ${convertPrice(it
         </section>
 
         <section id="products" className="mt-20 scroll-mt-28">
-          <div className="flex items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">The edit</p><h2 className="mt-2 text-4xl text-foreground">Loved by our community</h2></div><div className="hidden items-center gap-1 text-xs text-muted-foreground sm:flex"><Star size={14} className="fill-accent text-accent" /> 4.8 average rating</div></div>
+          <div className="flex flex-col gap-5 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">The edit</p>
+              <h2 className="mt-2 text-4xl text-foreground">Loved by our community</h2>
+              <p className="mt-2 text-sm text-muted-foreground">{filteredProducts.length} beauty finds, curated for your shelf.</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="hidden items-center gap-1 text-xs text-muted-foreground sm:flex"><Star size={14} className="fill-accent text-accent" /> 4.8 average rating</div>
+              <label className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground shadow-sm">
+                <span className="text-muted-foreground">Sort by</span>
+                <select value={sortBy} onChange={(event) => setSortBy(event.target.value as typeof sortBy)} className="cursor-pointer bg-transparent pr-1 outline-none">
+                  <option value="featured">Featured</option>
+                  <option value="price-asc">Price: low to high</option>
+                  <option value="price-desc">Price: high to low</option>
+                  <option value="name">Name: A to Z</option>
+                </select>
+              </label>
+            </div>
+          </div>
           
           {filteredProducts.length === 0 ? <p className="mt-8 rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">No beauty finds match your search yet.</p> : <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-5">{filteredProducts.map((product) => {
             const imageUrl = getImageUrl(product.image)
