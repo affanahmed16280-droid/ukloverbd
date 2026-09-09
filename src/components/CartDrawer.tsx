@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight } from "lucide-react";
+import { cloudinaryUrl } from "@/lib/products";
 import { useCartStore } from "@/store/cartStore";
 
 export default function CartDrawer() {
@@ -134,7 +135,7 @@ export default function CartDrawer() {
                   style={{ backgroundColor: "var(--cream-dark)" }}
                 >
                   <Image
-                    src={item.image}
+                    src={cloudinaryUrl(item.image, 200, 200)}
                     alt={item.name}
                     fill
                     className="object-cover"

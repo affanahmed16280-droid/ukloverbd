@@ -1,3 +1,6 @@
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "./firebase";
+
 const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "qvkox4mr";
 
 export function cloudinaryUrl(
@@ -22,31 +25,69 @@ export interface Product {
   image: string; // Cloudinary public_id
   category: string;
   badge?: string;
+  createdAt?: number;
 }
 
 export interface FirestoreProduct {
+  title?: unknown;
   name?: unknown;
   brand?: unknown;
   variant?: unknown;
   price?: unknown;
   originalPrice?: unknown;
   imageUrl?: unknown;
+  image_url?: unknown;
   image?: unknown;
   category?: unknown;
+  categoryName?: unknown;
+  category_name?: unknown;
+  categoryId?: unknown;
+  category_id?: unknown;
   badge?: unknown;
   sku?: unknown;
+  createdAt?: unknown;
+}
+
+function firstString(...values: unknown[]): string | undefined {
+  return values.find(
+    (value): value is string => typeof value === "string" && value.trim().length > 0
+  )?.trim();
+}
+
+function toNumber(value: unknown): number | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+  return undefined;
+}
+
+function toTimestamp(value: unknown): number | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (value instanceof Date) return value.getTime();
+  if (value && typeof value === "object" && "toMillis" in value) {
+    const toMillis = (value as { toMillis?: unknown }).toMillis;
+    if (typeof toMillis === "function") {
+      const result = toMillis.call(value);
+      return typeof result === "number" && Number.isFinite(result) ? result : undefined;
+    }
+  }
+  if (value && typeof value === "object" && "seconds" in value) {
+    const seconds = (value as { seconds?: unknown }).seconds;
+    return typeof seconds === "number" && Number.isFinite(seconds)
+      ? seconds * 1000
+      : undefined;
+  }
+  return undefined;
 }
 
 export function productFromFirestore(
   id: string,
   data: FirestoreProduct
 ): Product | null {
-  const image = typeof data.image === "string"
-    ? data.image
-    : typeof data.imageUrl === "string"
-      ? data.imageUrl
-      : "";
-  const name = typeof data.name === "string" ? data.name : "";
+  const image = firstString(data.image_url, data.imageUrl, data.image) ?? "";
+  const name = firstString(data.title, data.name) ?? "";
 
   if (!image || !name) {
     return null;
@@ -54,15 +95,30 @@ export function productFromFirestore(
 
   return {
     id,
-    brand: typeof data.brand === "string" ? data.brand : "UK Lover BD",
+    brand: firstString(data.brand) ?? "UK Brand Lover",
     name,
-    variant: typeof data.variant === "string" ? data.variant : "",
-    price: typeof data.price === "number" ? data.price : 0,
-    originalPrice: typeof data.originalPrice === "number" ? data.originalPrice : undefined,
+    variant: firstString(data.variant) ?? "",
+    price: toNumber(data.price) ?? 0,
+    originalPrice: toNumber(data.originalPrice),
     image,
-    category: typeof data.category === "string" ? data.category : "Beauty & Care",
-    badge: typeof data.badge === "string" ? data.badge : undefined,
+    category: firstString(
+      data.category,
+      data.category_name,
+      data.categoryName,
+      data.category_id,
+      data.categoryId,
+    ) ?? "Beauty & Care",
+    badge: firstString(data.badge),
+    createdAt: toTimestamp(data.createdAt),
   };
+}
+
+export async function getStoreProducts(): Promise<Product[]> {
+  const snapshot = await getDocs(collection(db, "products"));
+  return snapshot.docs
+    .map((document) => productFromFirestore(document.id, document.data()))
+    .filter((product): product is Product => product !== null)
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export const products: Product[] = [

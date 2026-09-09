@@ -41,6 +41,21 @@ export const PRODUCT_CATEGORIES = [
 export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number]
 
 const categoryAliases: Record<string, readonly string[]> = {
+  Skincare: [
+    'Skincare',
+    'Skin Care (Face)',
+    'Face Serum',
+    "24 hour's Day Cream",
+    'Day Cream',
+    'Night Cream',
+    'Face Mask',
+    'Face Wash & Toner',
+    'Facewash',
+    'Cream',
+  ],
+  Haircare: ['Haircare', 'Hair Care', 'Shampoo', 'Conditioner', 'Hair Mask', 'Hair oil', 'Hair Serum'],
+  Cosmetics: ['Cosmetics', 'Make up', 'Lipstick', 'Eye shadow', 'Foundation', 'Primer', 'Eye items'],
+  'Body & Bath': ['Body & Bath', 'Body Care'],
   'Skin Care (Face)': [
     'Skin Care (Face)',
     'Skincare',

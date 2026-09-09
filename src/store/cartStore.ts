@@ -14,6 +14,8 @@ export interface CartItem {
 interface CartState {
   items: CartItem[];
   isOpen: boolean;
+  hasHydrated: boolean;
+  setHasHydrated: (hasHydrated: boolean) => void;
   addItem: (item: Omit<CartItem, "quantity">) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
@@ -32,6 +34,8 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
       isOpen: false,
+      hasHydrated: false,
+      setHasHydrated: (hasHydrated) => set({ hasHydrated }),
 
       addItem: (newItem) => {
         set((state) => {
@@ -78,6 +82,13 @@ export const useCartStore = create<CartState>()(
         get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
       getItems: () => get().items,
     }),
-    { name: "uk-lover-cart" }
+    {
+      name: "uk-lover-cart",
+      version: 1,
+      partialize: (state) => ({ items: state.items }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
+    }
   )
 );

@@ -18,13 +18,6 @@ export default function TopBar() {
             style={{ color: "var(--plum)" }}>
             FREE DELIVERY IN DHAKA ON ORDERS OVER ৳5,000
           </div>
-          {/* Right */}
-          <div className="flex items-center gap-4 text-[10px] font-bold tracking-[0.2em] uppercase"
-            style={{ color: "var(--plum)" }}>
-            <span>BDT ৳</span>
-            <span style={{ color: "var(--cream-darker)" }}>|</span>
-            <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>GBP £</span>
-          </div>
         </div>
       </div>
     </div>

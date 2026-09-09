@@ -1,94 +1,43 @@
-# Firebase Setup Guide
+# Firebase production setup
 
-✅ **Firebase is already configured!** Your backend is ready to take orders.
+The storefront uses Firestore for products and orders, Firebase Authentication for administrator sign-in, and Firebase Storage for product images. Firebase web configuration values are expected in `.env.local` locally and in the deployment environment when building the app.
 
-## Current Configuration
+## 1. Configure the web app
 
-Your Firebase project is already set up with:
-- **Project ID:** ukloverbangla
-- **Database:** Firestore (enabled)
-- **Authentication:** Configured
-- **Configuration:** Applied to `src/lib/firebase.ts`
+Copy `.env.local.example` to `.env.local` and fill in the Firebase web-app values from Firebase Console → Project settings → Your apps. The `NEXT_PUBLIC_FIREBASE_*` values identify a Firebase web app; they are not administrator credentials. Never put a Firebase service-account JSON value or an admin password in a `NEXT_PUBLIC_` variable.
 
-## Order System Status
+In Firebase Console → Authentication → Sign-in method, enable **Email/Password** and create the administrator's user account.
 
-✅ **Fully Functional Components:**
-- Cart system (Zustand state management)
-- Product catalog with images
-- Checkout form with validation
-- Order submission to Firestore
-- WhatsApp integration for order confirmation
-- Responsive design for mobile/desktop
+## 2. Grant administrator access
 
-## How to Test Your Order System
+Keep a Firebase service-account key outside version control. By default, the included helper reads the ignored `serviceAccountKey.json` in the repository root; alternatively, point `FIREBASE_SERVICE_ACCOUNT_PATH` to a file outside the repository.
 
-### Option 1: Test via Web Interface
-1. Open your browser to `http://localhost:3000`
-2. Add products to cart by clicking on them
-3. Click the cart icon and proceed to checkout
-4. Fill in the form (name, phone, address)
-5. Submit the order
-6. Check your Firebase Console to see the order
-
-### Option 2: Use the Test File
-Open `test-order.html` in your browser to test Firebase connection and order submission directly.
-
-## Firebase Console Access
-
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Select project: `ukloverbangla`
-3. Navigate to "Firestore Database" to view orders
-4. Check "Build" > "Firestore Database" > "orders" collection
-
-## Firestore Security Rules
-
-Your current rules allow order creation. For production, consider updating to:
-
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /orders/{document=**} {
-      allow create: if true;
-      allow read, update, delete: if false;
-    }
-  }
-}
+```powershell
+npm run set-admin -- admin@example.com
 ```
 
-## Environment Variables
+The command adds the Firebase custom claim `admin: true`. The administrator must sign out and back in after the claim is set. The app checks this claim in the browser, while Firestore and Storage rules enforce it on the backend.
 
-Your Firebase configuration is hardcoded in `src/lib/firebase.ts`. For production deployment, consider moving these to environment variables:
+## 3. Deploy the security rules
 
-```env
-NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyDL23dqKxfGBkLcxjGqKfnwInzIpgO235g
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=ukloverbangla.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=ukloverbangla
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=ukloverbangla.firebasestorage.app
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=64007694018
-NEXT_PUBLIC_FIREBASE_APP_ID=1:64007694018:web:728f3e9969cf670a193d5b
+The repository contains the production rules in `firestore.rules` and `storage.rules`, referenced by `firebase.json`.
+
+```powershell
+npx firebase-tools login
+npx firebase-tools deploy --only firestore:rules,storage
 ```
 
-## Troubleshooting
+These rules provide the following access:
 
-**If orders aren't appearing in Firestore:**
-1. Check Firebase Console > Firestore Database
-2. Verify the "orders" collection exists
-3. Check browser console for errors
-4. Ensure Firestore is in test mode or has proper rules
+- Everyone can read products and submit a schema-validated pending order.
+- Only an authenticated user with the `admin` claim can create, update, or delete products; read and manage orders; or upload/delete product images.
+- Product images are publicly readable and limited to image files below 10 MB.
 
-**If you see permission errors:**
-1. Go to Firebase Console > Firestore Database > Rules
-2. Ensure rules allow write access
-3. Consider using test mode for development
+## 4. Verify before launch
 
-## Order Flow
+1. Open the storefront in a private browser window: products should load and a guest order should submit.
+2. Visit `/admin`: a normal Firebase user must be denied.
+3. Sign in with the claimed administrator: product editing and image upload should work.
+4. Confirm that a direct unauthenticated Firestore product write and a Storage upload are rejected by Firebase.
 
-1. Customer browses products
-2. Adds items to cart
-3. Proceeds to checkout
-4. Fills delivery details
-5. Submits order → saves to Firestore
-6. Gets confirmation with WhatsApp link
-7. You receive order in Firebase Console
-8. Contact customer via WhatsApp to confirm
+If a service-account key has ever been committed or shared outside a trusted environment, revoke it in Google Cloud Console and create a new one.

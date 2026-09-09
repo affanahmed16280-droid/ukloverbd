@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, CheckCircle, Loader2, ShoppingBag } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import Header from "@/components/Header";
+import { cloudinaryUrl } from "@/lib/products";
 import { useCartStore } from "@/store/cartStore";
 import { submitOrder } from "@/lib/firestore";
 
@@ -20,10 +21,11 @@ interface FormErrors {
   name?: string;
   phone?: string;
   address?: string;
+  cart?: string;
 }
 
 export default function CheckoutPage() {
-  const { items, totalPrice, clearCart } = useCartStore();
+  const { items, totalPrice, clearCart, hasHydrated } = useCartStore();
   const total = totalPrice();
 
   const [form, setForm] = useState<FormData>({
@@ -39,6 +41,7 @@ export default function CheckoutPage() {
 
   const validate = (): boolean => {
     const newErrors: FormErrors = {};
+    if (items.length === 0) newErrors.cart = "Your cart is empty. Add a product before checking out.";
     if (!form.name.trim()) newErrors.name = "Name is required";
     if (!form.phone.trim()) {
       newErrors.phone = "Phone number is required";
@@ -51,6 +54,18 @@ export default function CheckoutPage() {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
+  if (!hasHydrated) {
+    return (
+      <>
+        <TopBar />
+        <Header />
+        <main className="min-h-[70vh] flex items-center justify-center px-4 py-20 text-sm text-gray-500">
+          Loading your cart…
+        </main>
+      </>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,6 +163,9 @@ export default function CheckoutPage() {
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
+                  {errors.cart && (
+                    <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{errors.cart}</p>
+                  )}
                   {/* Name */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
@@ -278,7 +296,7 @@ export default function CheckoutPage() {
                         <div key={item.id} className="flex gap-3">
                           <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0">
                             <Image
-                              src={item.image}
+                              src={cloudinaryUrl(item.image, 200, 200)}
                               alt={item.name}
                               fill
                               className="object-cover"

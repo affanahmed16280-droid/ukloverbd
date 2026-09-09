@@ -10,14 +10,11 @@ import {
   ShoppingBag,
   Sparkles,
   Star,
-  X,
   Phone,
   MessageCircle,
 } from 'lucide-react'
-import { productFromFirestore, products, type Product } from '@/lib/products'
+import { getStoreProducts, type Product } from '@/lib/products'
 import { PRODUCT_CATEGORIES, productMatchesCategory } from '@/lib/categories'
-import { collection, getDocs } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
 import { useCartStore } from '@/store/cartStore'
 
 // Helper function to construct Cloudinary URLs
@@ -68,21 +65,14 @@ export default function Page() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [query, setQuery] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
-  const [storeProducts, setStoreProducts] = useState<Product[]>(products)
+  const [storeProducts, setStoreProducts] = useState<Product[]>([])
   const [selectedCategory, setSelectedCategory] = useState('All Products')
   const [sortBy, setSortBy] = useState<'featured' | 'newest' | 'price-asc' | 'price-desc' | 'name'>('featured')
-  const [currency, setCurrency] = useState<'BDT' | 'GBP'>('BDT')
-  const [showOrderModal, setShowOrderModal] = useState(false)
-  const [orderForm, setOrderForm] = useState({
-    name: '',
-    phone: '',
-    address: '',
-    notes: ''
-  })
+  const [productsLoading, setProductsLoading] = useState(true)
+  const [productsError, setProductsError] = useState<string | null>(null)
   
   const cartStore = useCartStore()
   const count = cartStore.totalItems()
-  const cartItems = cartStore.items
 
   const slide = heroSlides[activeSlide]
   
@@ -101,7 +91,7 @@ export default function Page() {
     
     return [...filtered].sort((a, b) => {
       if (sortBy === 'newest') {
-        const createdAt = (product: Product) => (product as Product & { createdAt?: number }).createdAt || 0
+        const createdAt = (product: Product) => product.createdAt || 0
         return createdAt(b) - createdAt(a)
       }
       if (sortBy === 'name') return a.name.localeCompare(b.name)
@@ -122,71 +112,21 @@ export default function Page() {
     })
   }, [query, selectedCategory, sortBy, storeProducts])
 
-  const convertPrice = (price: number) => {
-    if (currency === 'GBP') {
-      return `£${(price / 120).toFixed(2)}`
-    }
-    return `৳${price.toLocaleString()}`
-  }
-
-  const handlePlaceOrder = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!orderForm.name || !orderForm.phone || !orderForm.address) {
-      alert('Please fill in all required fields')
-      return
-    }
-
-    const orderItems = cartItems
-    const total = cartStore.total()
-
-    // Create WhatsApp message
-    const message = `
-🛒 *New Order from UK Brand Lover*
-
-👤 *Customer:* ${orderForm.name}
-📱 *Phone:* ${orderForm.phone}
-📍 *Address:* ${orderForm.address}
-
-📦 *Order Items:*
-${orderItems.map(item => `- ${item.name} (${item.quantity}x) - ${convertPrice(item.price)}`).join('\n')}
-
-💰 *Total:* ${convertPrice(total)}
-
-📝 *Notes:* ${orderForm.notes || 'None'}
-    `.trim()
-
-    // Open WhatsApp with the message
-    const whatsappUrl = `https://wa.me/8801959524393?text=${encodeURIComponent(message)}`
-    window.open(whatsappUrl, '_blank')
-    
-    setShowOrderModal(false)
-    cartStore.clearCart()
-    setOrderForm({ name: '', phone: '', address: '', notes: '' })
-  }
-
   // Load products from Firestore
   useEffect(() => {
     let active = true
 
     async function loadProducts() {
       try {
-        const snapshot = await getDocs(collection(db, "products"))
-        
-        const firestoreProducts = snapshot.docs
-          .map((document) => productFromFirestore(document.id, document.data()))
-          .filter((product): product is Product => product !== null)
-
-        if (active && firestoreProducts.length > 0) {
-          setStoreProducts(firestoreProducts)
-        } else if (active) {
-          setStoreProducts(products)
-        }
+        const firestoreProducts = await getStoreProducts()
+        if (active) setStoreProducts(firestoreProducts)
       } catch (error) {
         console.error("Unable to load products from Firestore", error)
         if (active) {
-          setStoreProducts(products)
+          setProductsError('Products could not be loaded. Please refresh the page and try again.')
         }
+      } finally {
+        if (active) setProductsLoading(false)
       }
     }
 
@@ -246,7 +186,7 @@ ${orderItems.map(item => `- ${item.name} (${item.quantity}x) - ${convertPrice(it
       name: product.name,
       variant: product.variant,
       price: product.price,
-      image: product.image
+      image: getImageUrl(product.image)
     })
   }
 
@@ -295,22 +235,6 @@ ${orderItems.map(item => `- ${item.name} (${item.quantity}x) - ${convertPrice(it
               />
             </label>
             
-            {/* Currency Selector */}
-            <div className="flex items-center gap-2 text-xs font-medium">
-              <button 
-                onClick={() => setCurrency('BDT')}
-                className={`px-3 py-1 rounded-full transition-colors ${currency === 'BDT' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-foreground'}`}
-              >
-                BDT
-              </button>
-              <button 
-                onClick={() => setCurrency('GBP')}
-                className={`px-3 py-1 rounded-full transition-colors ${currency === 'GBP' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-foreground'}`}
-              >
-                GBP
-              </button>
-            </div>
-
             <button 
               type="button" 
               onClick={() => cartStore.openCart()}
@@ -432,7 +356,7 @@ ${orderItems.map(item => `- ${item.name} (${item.quantity}x) - ${convertPrice(it
             </div>
           </div>
           
-          {filteredProducts.length === 0 ? <p className="mt-8 rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">No beauty finds match your search yet.</p> : <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-5">{filteredProducts.map((product) => {
+          {productsLoading ? <p className="mt-8 rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">Loading products…</p> : productsError ? <p className="mt-8 rounded-2xl border border-dashed border-destructive/30 p-8 text-center text-sm text-destructive">{productsError}</p> : filteredProducts.length === 0 ? <p className="mt-8 rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">No beauty finds match your search yet.</p> : <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-5">{filteredProducts.map((product) => {
             const imageUrl = getImageUrl(product.image)
             
             return (
@@ -451,7 +375,7 @@ ${orderItems.map(item => `- ${item.name} (${item.quantity}x) - ${convertPrice(it
                 </div>
                 <p className="mt-4 text-[10px] font-bold uppercase tracking-wider text-accent">{product.brand}</p>
                 <h3 className="mt-1 text-sm font-semibold text-foreground sm:text-base">{product.name}</h3>
-                <div className="mt-2 flex items-center justify-between"><p className="text-sm font-semibold text-primary">{product.price > 0 ? convertPrice(product.price) : 'Price on request'}</p><span className="flex items-center gap-1 text-[11px] text-muted-foreground"><Star size={12} className="fill-accent text-accent" /> 4.8</span></div>
+                <div className="mt-2 flex items-center justify-between"><p className="text-sm font-semibold text-primary">{product.price > 0 ? `৳${product.price.toLocaleString()}` : 'Price on request'}</p><span className="flex items-center gap-1 text-[11px] text-muted-foreground"><Star size={12} className="fill-accent text-accent" /> 4.8</span></div>
               </article>
             )
           })}</div>}
@@ -515,165 +439,6 @@ ${orderItems.map(item => `- ${item.name} (${item.quantity}x) - ${convertPrice(it
         </div>
       </footer>
 
-      {/* Order Modal */}
-      {showOrderModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-card rounded-2xl border border-border p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold">Your Cart</h2>
-              <button
-                onClick={() => setShowOrderModal(false)}
-                className="p-2 hover:bg-secondary rounded-full"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {count === 0 ? (
-              <div className="text-center py-8">
-                <ShoppingBag size={48} className="mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">Your cart is empty</p>
-                <button
-                  onClick={() => setShowOrderModal(false)}
-                  className="mt-4 bg-primary text-primary-foreground px-6 py-2 rounded-full text-sm font-medium"
-                >
-                  Continue Shopping
-                </button>
-              </div>
-            ) : (
-              <>
-                <div className="mb-6 pb-6 border-b border-border">
-                  <div className="space-y-3">
-                    {cartItems.map((item) => (
-                      <div key={item.id} className="flex items-center gap-3">
-                        <img 
-                          src={getImageUrl(item.image)}
-                          alt={item.name}
-                          className="w-16 h-16 object-cover rounded-lg"
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://via.placeholder.com/100?text=Error'
-                          }}
-                        />
-                        <div className="flex-1">
-                          <h4 className="font-medium text-sm">{item.name}</h4>
-                          <p className="text-xs text-muted-foreground">{item.brand}</p>
-                          <p className="text-sm font-semibold text-primary">{convertPrice(item.price)}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => {
-                              if (item.quantity > 1) {
-                                cartStore.updateQuantity(item.id, item.quantity - 1)
-                              } else {
-                                cartStore.removeItem(item.id)
-                              }
-                            }}
-                            className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center hover:bg-secondary/80"
-                          >
-                            -
-                          </button>
-                          <span className="w-8 text-center">{item.quantity}</span>
-                          <button
-                            onClick={() => {
-                              cartStore.updateQuantity(item.id, item.quantity + 1)
-                            }}
-                            className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center hover:bg-secondary/80"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-border flex justify-between font-bold text-lg">
-                    <span>Total</span>
-                    <span>{convertPrice(cartStore.total())}</span>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <button
-                    onClick={() => {
-                      // Scroll to order form
-                      document.getElementById('order-form')?.scrollIntoView({ behavior: 'smooth' })
-                    }}
-                    className="w-full bg-primary text-primary-foreground px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
-                  >
-                    Proceed to Checkout
-                  </button>
-                  <button
-                    onClick={() => {
-                      cartStore.clearCart()
-                      setShowOrderModal(false)
-                    }}
-                    className="w-full border border-border px-6 py-3 rounded-lg font-medium hover:bg-secondary transition-colors"
-                  >
-                    Clear Cart
-                  </button>
-                </div>
-
-                <div id="order-form" className="mt-6 pt-6 border-t border-border">
-                  <h3 className="font-semibold mb-4">Delivery Information</h3>
-                  <form onSubmit={handlePlaceOrder} className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Name *</label>
-                      <input
-                        type="text"
-                        value={orderForm.name}
-                        onChange={(e) => setOrderForm({...orderForm, name: e.target.value})}
-                        className="w-full px-4 py-2 border border-border rounded-lg bg-background"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Phone Number *</label>
-                      <input
-                        type="tel"
-                        value={orderForm.phone}
-                        onChange={(e) => setOrderForm({...orderForm, phone: e.target.value})}
-                        className="w-full px-4 py-2 border border-border rounded-lg bg-background"
-                        placeholder="017XXXXXXXX"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Delivery Address *</label>
-                      <textarea
-                        value={orderForm.address}
-                        onChange={(e) => setOrderForm({...orderForm, address: e.target.value})}
-                        className="w-full px-4 py-2 border border-border rounded-lg bg-background"
-                        rows={3}
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Additional Notes</label>
-                      <textarea
-                        value={orderForm.notes}
-                        onChange={(e) => setOrderForm({...orderForm, notes: e.target.value})}
-                        className="w-full px-4 py-2 border border-border rounded-lg bg-background"
-                        rows={2}
-                        placeholder="Any special instructions..."
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="w-full bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-                    >
-                      <MessageCircle size={18} />
-                      Place Order via WhatsApp
-                    </button>
-                  </form>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
     </main>
   )
 }

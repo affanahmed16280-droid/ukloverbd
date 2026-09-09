@@ -1,16 +1,41 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
+import { getApp, getApps, initializeApp, type FirebaseOptions } from "firebase/app";
+import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDL23dqKxfGBkLcxjGqKfnwInzIpg0235g",
-  authDomain: "ukloverbangla.firebaseapp.com",
-  projectId: "ukloverbangla",
-  storageBucket: "ukloverbangla.firebasestorage.app",
-  messagingSenderId: "64007694018",
-  appId: "1:64007694018:web:728f3e9969cf670a193d5b"
+const firebaseConfig: FirebaseOptions = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
+
+const requiredFirebaseVariables = [
+  "NEXT_PUBLIC_FIREBASE_API_KEY",
+  "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN",
+  "NEXT_PUBLIC_FIREBASE_PROJECT_ID",
+  "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET",
+  "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID",
+  "NEXT_PUBLIC_FIREBASE_APP_ID",
+] as const;
+
+const missingFirebaseVariables = requiredFirebaseVariables.filter(
+  (variable) => !process.env[variable]
+);
+
+export function assertFirebaseConfigured() {
+  if (missingFirebaseVariables.length > 0) {
+    throw new Error(
+      `Firebase is not configured. Missing: ${missingFirebaseVariables.join(", ")}.`
+    );
+  }
+}
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
+const auth = getAuth(app);
+const storage = getStorage(app);
 
-export { db };
+export { auth, db, storage };
