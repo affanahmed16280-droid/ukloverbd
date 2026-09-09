@@ -1,5 +1,6 @@
 const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
 
 export async function uploadToCloudinary(file: File): Promise<string> {
   if (process.env.NODE_ENV !== 'production') {
@@ -16,6 +17,14 @@ export async function uploadToCloudinary(file: File): Promise<string> {
 
   if (!UPLOAD_PRESET || UPLOAD_PRESET === "unsigned_preset" || UPLOAD_PRESET === "undefined") {
     throw new Error('Cloudinary upload preset is not configured. Please add NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET to your environment variables.');
+  }
+
+  if (!file.type.startsWith('image/')) {
+    throw new Error('Only image files can be uploaded.');
+  }
+
+  if (file.size > MAX_IMAGE_SIZE_BYTES) {
+    throw new Error('Images must be 10 MB or smaller.');
   }
 
   const formData = new FormData();
@@ -47,6 +56,10 @@ export async function uploadToCloudinary(file: File): Promise<string> {
       throw new Error(`Cloudinary error: ${data.error.message}`);
     }
     
+    if (typeof data.public_id !== 'string' || !data.public_id) {
+      throw new Error('Cloudinary did not return an image public ID.');
+    }
+
     return data.public_id;
   } catch (error) {
     console.error('Cloudinary upload error:', error);

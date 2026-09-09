@@ -1,35 +1,28 @@
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { auth, assertFirebaseConfigured, storage } from "./firebase";
-
-const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
-
-function fileExtension(file: File): string {
-  const extension = file.name.split(".").pop()?.toLowerCase();
-  return extension && /^[a-z0-9]+$/.test(extension) ? `.${extension}` : "";
-}
+import { uploadToCloudinary } from "./cloudinary";
+import { auth } from "./firebase";
 
 export async function uploadProductImage(file: File): Promise<string> {
-  assertFirebaseConfigured();
+  return uploadToCloudinary(file);
+}
 
-  if (!auth.currentUser) {
-    throw new Error("Please sign in before uploading an image.");
-  }
+export async function deleteProductImage(image: string): Promise<void> {
+  const publicId = image.trim();
+  if (!publicId || publicId.startsWith("http://") || publicId.startsWith("https://")) return;
 
-  if (!file.type.startsWith("image/")) {
-    throw new Error("Only image files can be uploaded.");
-  }
+  const user = auth.currentUser;
+  if (!user) throw new Error("Please sign in before deleting an image.");
 
-  if (file.size > MAX_IMAGE_SIZE_BYTES) {
-    throw new Error("Images must be 10 MB or smaller.");
-  }
-
-  const uniqueId = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
-  const path = `products/${Date.now()}-${uniqueId}${fileExtension(file)}`;
-  const imageRef = ref(storage, path);
-
-  await uploadBytes(imageRef, file, {
-    contentType: file.type,
+  const response = await fetch("/api/cloudinary/images", {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${await user.getIdToken()}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ publicId }),
   });
 
-  return getDownloadURL(imageRef);
+  if (response.ok) return;
+
+  const payload = await response.json().catch(() => null) as { error?: unknown } | null;
+  throw new Error(typeof payload?.error === "string" ? payload.error : "Cloudinary could not delete the image.");
 }

@@ -1,6 +1,6 @@
 # Firebase production setup
 
-The storefront uses Firestore for products and orders, Firebase Authentication for administrator sign-in, and Firebase Storage for product images. Firebase web configuration values are expected in `.env.local` locally and in the deployment environment when building the app.
+The storefront uses Firestore for products and orders, Firebase Authentication for administrator sign-in, and Cloudinary for product images. Firebase web configuration values are expected in `.env.local` locally and in the deployment environment when building the app.
 
 ## 1. Configure the web app
 
@@ -16,29 +16,45 @@ Keep a Firebase service-account key outside version control. By default, the inc
 npm run set-admin -- admin@example.com
 ```
 
-The command adds the Firebase custom claim `admin: true`. The administrator must sign out and back in after the claim is set. The app checks this claim in the browser, while Firestore and Storage rules enforce it on the backend.
+The command adds the Firebase custom claim `admin: true`. The administrator must sign out and back in after the claim is set. Firestore rules and the protected Cloudinary deletion route enforce this claim on the backend.
+
+## Cloudinary product images
+
+Product images are uploaded to Cloudinary, not Firebase Storage. Set these variables in Vercel for **Production** and **Preview**:
+
+```text
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+CLOUDINARY_CLOUD_NAME
+CLOUDINARY_API_KEY
+CLOUDINARY_API_SECRET
+FIREBASE_ADMIN_CLIENT_EMAIL
+FIREBASE_ADMIN_PRIVATE_KEY
+```
+
+The two `NEXT_PUBLIC_` variables enable browser uploads with an **unsigned** upload preset. Configure that preset in Cloudinary to accept only image formats and limit file size. The remaining variables are server-only. They let the protected `/api/cloudinary/images` route verify the Firebase `admin` claim and permanently delete a Cloudinary image when an administrator replaces or deletes a product. Never prefix API secrets or Firebase Admin credentials with `NEXT_PUBLIC_`.
 
 ## 3. Deploy the security rules
 
-The repository contains the production rules in `firestore.rules` and `storage.rules`, referenced by `firebase.json`.
+The repository contains the production Firestore rules in `firestore.rules`, referenced by `firebase.json`.
 
 ```powershell
 npx firebase-tools login
-npx firebase-tools deploy --only firestore:rules,storage
+npx firebase-tools deploy --only firestore:rules
 ```
 
 These rules provide the following access:
 
 - Everyone can read products and submit a schema-validated pending order.
-- Only an authenticated user with the `admin` claim can create, update, or delete products; read and manage orders; or upload/delete product images.
-- Product images are publicly readable and limited to image files below 10 MB.
+- Only an authenticated user with the `admin` claim can create, update, or delete products and read and manage orders.
+- Product images are uploaded directly to Cloudinary using the configured unsigned upload preset.
 
 ## 4. Verify before launch
 
 1. Open the storefront in a private browser window: products should load and a guest order should submit.
 2. Visit `/admin`: a normal Firebase user must be denied.
 3. Sign in with the claimed administrator: product editing and image upload should work.
-4. Confirm that a direct unauthenticated Firestore product write and a Storage upload are rejected by Firebase.
+4. Confirm that a direct unauthenticated Firestore product write is rejected by Firebase.
 
 If a service-account key has ever been committed or shared outside a trusted environment, revoke it in Google Cloud Console and create a new one.
 
@@ -58,7 +74,6 @@ The required variables are:
 NEXT_PUBLIC_FIREBASE_API_KEY
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
 NEXT_PUBLIC_FIREBASE_PROJECT_ID
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
 NEXT_PUBLIC_FIREBASE_APP_ID
 ```

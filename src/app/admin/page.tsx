@@ -9,7 +9,7 @@ import { auth, db } from '@/lib/firebase'
 import { PRODUCT_CATEGORIES } from '@/lib/categories'
 import { ORDER_STATUS_LABELS, ORDER_STATUSES, formatMoney, formatOrderDate, orderFromFirestore, type AdminOrder, type OrderStatus } from '@/lib/orders'
 import { cloudinaryUrl, productFromFirestore, type Product } from '@/lib/products'
-import { uploadProductImage } from '@/lib/productStorage'
+import { deleteProductImage, uploadProductImage } from '@/lib/productStorage'
 
 interface ProductFormData {
   id?: string
@@ -212,15 +212,27 @@ export default function AdminPage() {
 
       if (!productData.title) throw new Error('A product name is required.')
 
+      let previousImageDeleteFailed = false
       if (editingProduct.id) {
+        const previousImage = products.find((product) => product.id === editingProduct.id)?.image
         await updateDoc(doc(db, 'products', editingProduct.id), productData)
+        if (previousImage && previousImage !== imageUrl) {
+          try {
+            await deleteProductImage(previousImage)
+          } catch (deleteError) {
+            console.error('Previous Cloudinary image could not be deleted', deleteError)
+            previousImageDeleteFailed = true
+          }
+        }
       } else {
         await addDoc(collection(db, 'products'), { ...productData, createdAt: serverTimestamp() })
       }
 
       await loadProducts()
       closeEditor()
-      setNotice('Product saved successfully.')
+      setNotice(previousImageDeleteFailed
+        ? 'Product saved, but the previous Cloudinary image could not be deleted.'
+        : 'Product saved successfully.')
     } catch (caughtError) {
       console.error('Saving product failed', caughtError)
       setError(caughtError instanceof Error ? caughtError.message : 'Product could not be saved.')
@@ -229,15 +241,24 @@ export default function AdminPage() {
     }
   }
 
-  const handleDeleteProduct = async (id: string) => {
+  const handleDeleteProduct = async (product: Product) => {
     if (!window.confirm('Delete this product? This cannot be undone.')) return
     setError(null)
     setNotice(null)
 
     try {
-      await deleteDoc(doc(db, 'products', id))
+      await deleteDoc(doc(db, 'products', product.id))
+      let imageDeleteFailed = false
+      try {
+        await deleteProductImage(product.image)
+      } catch (deleteError) {
+        console.error('Cloudinary image could not be deleted', deleteError)
+        imageDeleteFailed = true
+      }
       await loadProducts()
-      setNotice('Product deleted.')
+      setNotice(imageDeleteFailed
+        ? 'Product deleted, but its Cloudinary image could not be deleted.'
+        : 'Product and Cloudinary image deleted.')
     } catch (caughtError) {
       console.error('Deleting product failed', caughtError)
       setError(caughtError instanceof Error ? caughtError.message : 'Product could not be deleted.')
@@ -349,7 +370,7 @@ export default function AdminPage() {
 
         <section className="bg-card rounded-2xl border border-border p-6 mb-8">
           <h2 className="text-xl font-semibold">Bulk image upload</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Images are stored in Firebase Storage. New products are saved with a draft price of 0.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Images are uploaded to Cloudinary. New products are saved with a draft price of 0.</p>
           <label className="mt-5 flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-border p-8 text-center">
             <Upload size={42} className="text-primary" />
             <span className="font-medium">{uploading ? 'Uploading…' : 'Choose product images'}</span>
@@ -391,7 +412,7 @@ export default function AdminPage() {
                 <article key={product.id} className="rounded-xl border border-border p-4">
                   <img src={cloudinaryUrl(product.image, 400, 400)} alt={product.name} className="mb-3 aspect-square w-full rounded-lg object-cover bg-secondary" />
                   <h3 className="font-semibold text-foreground truncate">{product.name}</h3><p className="text-sm text-muted-foreground">{product.brand}</p><p className="mt-1 font-bold text-primary">{product.price > 0 ? `${product.price.toLocaleString()}` : 'Price on request'}</p><p className="mt-1 text-xs text-muted-foreground">{product.category}</p>
-                  <div className="mt-4 flex gap-2"><button onClick={() => { setEditingProduct(draftFromProduct(product)); setImageFile(null) }} className="secondary-button flex-1"><Edit2 size={15} /> Edit</button><button onClick={() => void handleDeleteProduct(product.id)} className="rounded-lg bg-destructive/10 px-3 text-destructive hover:bg-destructive/20" aria-label={`Delete ${product.name}`}><Trash2 size={16} /></button></div>
+                  <div className="mt-4 flex gap-2"><button onClick={() => { setEditingProduct(draftFromProduct(product)); setImageFile(null) }} className="secondary-button flex-1"><Edit2 size={15} /> Edit</button><button onClick={() => void handleDeleteProduct(product)} className="rounded-lg bg-destructive/10 px-3 text-destructive hover:bg-destructive/20" aria-label={`Delete ${product.name}`}><Trash2 size={16} /></button></div>
                 </article>
               ))}
             </div>
