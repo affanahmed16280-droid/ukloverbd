@@ -25,8 +25,9 @@ export default function CartDrawer() {
       {isOpen && (
         <div
           className="fixed inset-0 z-50"
-          style={{ backgroundColor: "rgba(28,20,32,0.4)" }}
+          style={{ backgroundColor: "rgba(28,20,32,0.5)" }}
           onClick={closeCart}
+          aria-hidden="true"
         />
       )}
 
@@ -36,87 +37,90 @@ export default function CartDrawer() {
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
         style={{ backgroundColor: "var(--cream)" }}
+        role="dialog"
+        aria-label="Shopping cart"
       >
         {/* Header */}
         <div
           className="flex items-center justify-between px-6 py-5 border-b"
           style={{ borderColor: "var(--cream-darker)" }}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <ShoppingBag
-              size={16}
-              strokeWidth={1.5}
+              size={20}
+              strokeWidth={2}
               style={{ color: "var(--plum)" }}
             />
             <h2
-              className="text-sm font-semibold"
-              style={{
-                fontFamily: "var(--font-serif)",
-                color: "var(--plum)",
-                fontWeight: 600,
-              }}
+              className="text-lg font-bold"
+              style={{ color: "var(--plum)", fontFamily: "var(--font-serif)" }}
             >
               Your Cart
               {items.length > 0 && (
                 <span
-                  className="ml-1.5 text-xs font-normal"
-                  style={{ color: "var(--text-muted)", fontFamily: "var(--font-sans)" }}
+                  className="ml-2 px-2.5 py-0.5 rounded-full text-xs font-semibold"
+                  style={{ backgroundColor: "var(--plum)", color: "white" }}
                 >
-                  ({items.length} item{items.length > 1 ? "s" : ""})
+                  {items.length}
                 </span>
               )}
             </h2>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {items.length > 0 && (
               <button
                 onClick={clearCart}
-                className="text-[11px] transition-opacity hover:opacity-60 cursor-pointer"
-                style={{ color: "var(--text-muted)", fontFamily: "var(--font-sans)" }}
+                className="text-xs font-medium underline-offset-2 transition-opacity hover:opacity-70 cursor-pointer"
+                style={{ color: "var(--text-muted)" }}
               >
                 Clear all
               </button>
             )}
             <button
               onClick={closeCart}
-              className="p-1 cursor-pointer transition-opacity hover:opacity-60"
+              aria-label="Close cart"
+              className="w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:bg-secondary cursor-pointer"
               style={{ color: "var(--plum)" }}
             >
-              <X size={18} strokeWidth={1.5} />
+              <X size={18} strokeWidth={2} />
             </button>
           </div>
         </div>
 
         {/* Items */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
           {items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
-              <ShoppingBag
-                size={40}
-                strokeWidth={1}
-                style={{ color: "var(--cream-darker)" }}
-              />
+            <div className="flex flex-col items-center justify-center h-full gap-5 text-center px-4">
+              <div
+                className="w-20 h-20 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: "var(--cream-dark)" }}
+              >
+                <ShoppingBag
+                  size={36}
+                  strokeWidth={1.5}
+                  style={{ color: "var(--plum)" }}
+                />
+              </div>
               <div>
                 <p
-                  className="text-sm font-medium mb-1"
+                  className="text-base font-semibold mb-1"
                   style={{ color: "var(--plum)", fontFamily: "var(--font-serif)" }}
                 >
                   Your cart is empty
                 </p>
                 <p
-                  className="text-xs"
-                  style={{ color: "var(--text-muted)", fontFamily: "var(--font-sans)" }}
+                  className="text-sm"
+                  style={{ color: "var(--text-muted)" }}
                 >
-                  Add some items to get started
+                  Add some products and they will show up here.
                 </p>
               </div>
               <button
                 onClick={closeCart}
-                className="text-xs font-medium px-5 py-2 rounded-full border transition-all hover:opacity-70 cursor-pointer"
+                className="text-sm font-semibold px-6 py-2.5 rounded-full border transition-colors hover:bg-secondary cursor-pointer"
                 style={{
                   borderColor: "var(--cream-darker)",
                   color: "var(--plum)",
-                  fontFamily: "var(--font-sans)",
                 }}
               >
                 Continue Shopping
@@ -131,7 +135,7 @@ export default function CartDrawer() {
               >
                 {/* Image */}
                 <div
-                  className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0"
+                  className="relative w-[72px] h-[72px] rounded-xl overflow-hidden flex-shrink-0"
                   style={{ backgroundColor: "var(--cream-dark)" }}
                 >
                   <Image
@@ -139,40 +143,57 @@ export default function CartDrawer() {
                     alt={item.name}
                     fill
                     className="object-cover"
-                    sizes="64px"
+                    sizes="72px"
                   />
                 </div>
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <p
-                    className="text-[10px] mb-0.5"
-                    style={{ color: "var(--text-muted)", fontFamily: "var(--font-sans)" }}
+                    className="text-[11px] uppercase tracking-wide mb-1"
+                    style={{ color: "var(--text-muted)" }}
                   >
                     {item.brand}
                   </p>
                   <p
-                    className="text-sm font-semibold leading-tight truncate mb-1"
-                    style={{ fontFamily: "var(--font-serif)", color: "var(--plum)" }}
+                    className="text-[15px] font-semibold leading-tight truncate mb-1"
+                    style={{ color: "var(--plum)" }}
                   >
                     {item.name}
                   </p>
+                  {item.variant && (
+                    <p
+                      className="text-xs mb-1.5"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      {item.variant}
+                    </p>
+                  )}
                   <p
-                    className="text-xs font-semibold"
-                    style={{ color: "var(--gold)", fontFamily: "var(--font-sans)" }}
+                    className="text-sm font-bold"
+                    style={{ color: "var(--plum)" }}
                   >
                     {(item.price * item.quantity).toLocaleString()}
+                    {item.quantity > 1 && (
+                      <span
+                        className="ml-1.5 text-[11px] font-medium"
+                        style={{ color: "var(--text-muted)" }}
+                      >
+                        ({item.price.toLocaleString()} × {item.quantity})
+                      </span>
+                    )}
                   </p>
                 </div>
 
                 {/* Controls */}
-                <div className="flex flex-col items-end justify-between">
+                <div className="flex flex-col items-end justify-between gap-3">
                   <button
                     onClick={() => removeItem(item.id)}
-                    className="transition-opacity hover:opacity-60 cursor-pointer"
+                    aria-label={`Remove ${item.name}`}
+                    className="transition-colors hover:text-destructive cursor-pointer"
                     style={{ color: "var(--text-muted)" }}
                   >
-                    <Trash2 size={14} strokeWidth={1.5} />
+                    <Trash2 size={15} strokeWidth={1.5} />
                   </button>
                   <div
                     className="flex items-center rounded-full overflow-hidden border"
@@ -180,23 +201,25 @@ export default function CartDrawer() {
                   >
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      className="px-2 py-1 transition-colors cursor-pointer hover:bg-opacity-50"
+                      aria-label="Decrease quantity"
+                      className="w-7 h-7 flex items-center justify-center transition-colors hover:bg-secondary cursor-pointer"
                       style={{ color: "var(--plum)" }}
                     >
-                      <Minus size={11} strokeWidth={1.5} />
+                      <Minus size={13} strokeWidth={2} />
                     </button>
                     <span
-                      className="px-2 text-xs font-semibold min-w-[18px] text-center"
-                      style={{ color: "var(--plum)", fontFamily: "var(--font-sans)" }}
+                      className="w-6 text-sm font-bold text-center"
+                      style={{ color: "var(--plum)" }}
                     >
                       {item.quantity}
                     </span>
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      className="px-2 py-1 transition-colors cursor-pointer"
+                      aria-label="Increase quantity"
+                      className="w-7 h-7 flex items-center justify-center transition-colors hover:bg-secondary cursor-pointer"
                       style={{ color: "var(--plum)" }}
                     >
-                      <Plus size={11} strokeWidth={1.5} />
+                      <Plus size={13} strokeWidth={2} />
                     </button>
                   </div>
                 </div>
@@ -208,26 +231,29 @@ export default function CartDrawer() {
         {/* Footer */}
         {items.length > 0 && (
           <div
-            className="border-t px-6 py-6 space-y-4"
+            className="border-t px-6 py-5 space-y-4"
             style={{ borderColor: "var(--cream-darker)" }}
           >
             {total < 5000 && (
               <p
-                className="text-[11px] text-center"
-                style={{ color: "var(--text-muted)", fontFamily: "var(--font-sans)" }}
+                className="text-xs font-medium text-center rounded-xl px-3 py-2.5"
+                style={{
+                  color: "var(--plum-deep)",
+                  backgroundColor: "rgba(125,94,154,0.09)",
+                }}
               >
-                Add {(5000 - total).toLocaleString()} more for free Dhaka delivery
+                Add {(5000 - total).toLocaleString()} more to unlock free Dhaka delivery 🎁
               </p>
             )}
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-baseline">
               <span
-                className="text-xs"
-                style={{ color: "var(--text-muted)", fontFamily: "var(--font-sans)" }}
+                className="text-sm font-medium"
+                style={{ color: "var(--text-muted)" }}
               >
                 Subtotal
               </span>
               <span
-                className="text-lg font-bold"
+                className="text-2xl font-bold"
                 style={{ fontFamily: "var(--font-serif)", color: "var(--plum)" }}
               >
                 {total.toLocaleString()}
@@ -236,17 +262,21 @@ export default function CartDrawer() {
             <Link
               href="/checkout"
               onClick={closeCart}
-              className="flex items-center justify-center gap-2 w-full py-3.5 rounded-full font-semibold text-xs transition-all hover:opacity-80"
+              className="flex items-center justify-center gap-2 w-full py-4 rounded-full font-bold text-sm uppercase tracking-[0.06em] transition-all hover:opacity-90"
               style={{
                 backgroundColor: "var(--plum)",
                 color: "white",
-                fontFamily: "var(--font-sans)",
-                letterSpacing: "0.08em",
               }}
             >
-              PROCEED TO CHECKOUT
-              <ArrowRight size={14} />
+              Proceed to Checkout
+              <ArrowRight size={16} />
             </Link>
+            <p
+              className="text-center text-[11px]"
+              style={{ color: "var(--text-muted)" }}
+            >
+              No payment is taken online — we confirm via WhatsApp.
+            </p>
           </div>
         )}
       </div>

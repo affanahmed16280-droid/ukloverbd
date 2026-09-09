@@ -41,3 +41,28 @@ These rules provide the following access:
 4. Confirm that a direct unauthenticated Firestore product write and a Storage upload are rejected by Firebase.
 
 If a service-account key has ever been committed or shared outside a trusted environment, revoke it in Google Cloud Console and create a new one.
+
+## 5. Troubleshooting
+
+### "Firebase is not configured. Missing: NEXT_PUBLIC_FIREBASE_*..."
+
+The app reads the six `NEXT_PUBLIC_FIREBASE_*` values **when the server starts** (local dev) or **when the production build runs** (Vercel / hosting). It does not read `.env.local` live, so filling the file alone is not enough.
+
+- **Local development (`npm run dev`)** — make sure all six values exist in `.env.local`, then fully stop the server (Ctrl+C) and run `npm run dev` again. Then hard-refresh the browser (Ctrl+F5).
+- **Vercel / hosted production** — `.env*` files are gitignored and never uploaded with the code. Add every value in **Vercel → Your Project → Settings → Environment Variables**, then deploy a new build. The values are embedded at build time, so a redeploy is required after adding them.
+- **Local production server (`npm run build` + `npm start`)** — the values are baked into the build. If you add or change `.env.local`, re-run `npm run build` before `npm start`.
+
+The required variables are:
+
+```
+NEXT_PUBLIC_FIREBASE_API_KEY
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+NEXT_PUBLIC_FIREBASE_PROJECT_ID
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+NEXT_PUBLIC_FIREBASE_APP_ID
+```
+
+### "This account does not have administrator access."
+
+The Firebase user exists and has the right password, but the `admin: true` custom claim is missing. Run `npm run set-admin -- your@email.com` (see section 2), then **sign out and sign back in** so Firebase refreshes the ID token with the claim.

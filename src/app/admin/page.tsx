@@ -3,10 +3,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
 import { addDoc, collection, deleteDoc, doc, getDocs, serverTimestamp, updateDoc } from 'firebase/firestore'
-import { Edit2, Loader2, LockKeyhole, LogOut, Plus, Save, Trash2, Upload, X } from 'lucide-react'
+import { Edit2, Loader2, LockKeyhole, LogOut, MapPin, MessageCircle, PackageCheck, Plus, RefreshCw, Save, Trash2, Upload, User, X } from 'lucide-react'
 import { isAdmin, signInAsAdmin } from '@/lib/adminAuth'
 import { auth, db } from '@/lib/firebase'
 import { PRODUCT_CATEGORIES } from '@/lib/categories'
+import { ORDER_STATUS_LABELS, ORDER_STATUSES, formatMoney, formatOrderDate, orderFromFirestore, type AdminOrder, type OrderStatus } from '@/lib/orders'
 import { cloudinaryUrl, productFromFirestore, type Product } from '@/lib/products'
 import { uploadProductImage } from '@/lib/productStorage'
 
@@ -55,6 +56,9 @@ export default function AdminPage() {
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [orders, setOrders] = useState<AdminOrder[]>([])
+  const [loadingOrders, setLoadingOrders] = useState(false)
+  const [updatingOrder, setUpdatingOrder] = useState<string | null>(null)
 
   const loadProducts = useCallback(async () => {
     setLoadingProducts(true)
@@ -73,6 +77,23 @@ export default function AdminPage() {
     }
   }, [])
 
+  const loadOrders = useCallback(async () => {
+    setLoadingOrders(true)
+    try {
+      const snapshot = await getDocs(collection(db, 'orders'))
+      const loadedOrders = snapshot.docs
+        .map((document) => orderFromFirestore(document.id, document.data()))
+        .filter((order): order is AdminOrder => order !== null)
+        .sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0))
+      setOrders(loadedOrders)
+    } catch (caughtError) {
+      console.error('Unable to load orders for administration', caughtError)
+      setError('Orders could not be loaded. Check that your Firebase rules allow administrators to read the orders collection.')
+    } finally {
+      setLoadingOrders(false)
+    }
+  }, [])
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setError(null)
@@ -87,6 +108,7 @@ export default function AdminPage() {
         if (await isAdmin(user)) {
           setAuthenticationState('authorized')
           void loadProducts()
+          void loadOrders()
           return
         }
 
@@ -101,7 +123,7 @@ export default function AdminPage() {
     })
 
     return unsubscribe
-  }, [loadProducts])
+  }, [loadOrders, loadProducts])
 
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -113,6 +135,7 @@ export default function AdminPage() {
       setPassword('')
       setAuthenticationState('authorized')
       await loadProducts()
+      await loadOrders()
     } catch (caughtError) {
       console.error('Admin sign-in failed', caughtError)
       setError(caughtError instanceof Error ? caughtError.message : 'Unable to sign in.')
@@ -221,6 +244,41 @@ export default function AdminPage() {
     }
   }
 
+  const updateOrderStatus = async (orderId: string, status: OrderStatus) => {
+    setUpdatingOrder(orderId)
+    setError(null)
+    setNotice(null)
+
+    try {
+      await updateDoc(doc(db, 'orders', orderId), { status })
+      setNotice(`Order #${orderId.slice(0, 6).toUpperCase()} marked as ${ORDER_STATUS_LABELS[status].toLowerCase()}.`)
+      await loadOrders()
+    } catch (caughtError) {
+      console.error('Updating order status failed', caughtError)
+      setError(caughtError instanceof Error ? caughtError.message : 'Order status could not be updated.')
+    } finally {
+      setUpdatingOrder(null)
+    }
+  }
+
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!window.confirm('Delete this order? This cannot be undone.')) return
+    setUpdatingOrder(orderId)
+    setError(null)
+    setNotice(null)
+
+    try {
+      await deleteDoc(doc(db, 'orders', orderId))
+      setNotice('Order deleted.')
+      await loadOrders()
+    } catch (caughtError) {
+      console.error('Deleting order failed', caughtError)
+      setError(caughtError instanceof Error ? caughtError.message : 'Order could not be deleted.')
+    } finally {
+      setUpdatingOrder(null)
+    }
+  }
+
   if (authenticationState === 'checking') return <LoadingScreen label="Checking administrator access…" />
 
   if (authenticationState === 'signed-out') {
@@ -247,12 +305,47 @@ export default function AdminPage() {
     <main className="min-h-screen bg-background p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
         <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div><h1 className="text-4xl font-bold text-foreground">Product management</h1><p className="mt-2 text-muted-foreground">Manage product details and secure product images.</p></div>
+          <div><h1 className="text-4xl font-bold text-foreground">Admin dashboard</h1><p className="mt-2 text-muted-foreground">Manage products, product images, and customer orders.</p></div>
           <button onClick={() => void signOut(auth)} className="secondary-button"><LogOut size={16} /> Sign out</button>
         </header>
 
         {error && <p className="mb-6 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</p>}
         {notice && <p className="mb-6 rounded-xl border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-800">{notice}</p>}
+
+        <section className="rounded-2xl border border-border bg-card p-6 mb-8">
+          <div className="mb-4 flex flex-wrap items-center gap-3">
+            <PackageCheck size={22} className="text-primary" />
+            <h2 className="text-xl font-semibold">Orders ({orders.length})</h2>
+            <button onClick={() => void loadOrders()} className="secondary-button ml-auto"><RefreshCw size={15} /> Refresh</button>
+          </div>
+
+          <div className="mb-6 flex flex-wrap gap-2">
+            {ORDER_STATUSES.map((status) => (
+              <SummaryChip key={status} label={ORDER_STATUS_LABELS[status]} count={orders.filter((order) => order.status === status).length} className={STATUS_CHIP_CLASSES[status]} />
+            ))}
+          </div>
+
+          {loadingOrders ? (
+            <div className="py-12 flex justify-center"><Loader2 className="animate-spin text-primary" /></div>
+          ) : orders.length === 0 ? (
+            <div className="py-12 text-center">
+              <PackageCheck size={36} className="text-muted-foreground mx-auto" />
+              <p className="mt-3 text-sm text-muted-foreground">No orders have been placed yet. When customers check out, their orders will appear here automatically.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {orders.map((order) => (
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  updating={updatingOrder === order.id}
+                  onStatusChange={(status) => void updateOrderStatus(order.id, status)}
+                  onDelete={() => void handleDeleteOrder(order.id)}
+                />
+              ))}
+            </div>
+          )}
+        </section>
 
         <section className="bg-card rounded-2xl border border-border p-6 mb-8">
           <h2 className="text-xl font-semibold">Bulk image upload</h2>
@@ -315,4 +408,102 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function LoadingScreen({ label }: { label: string }) {
   return <main className="min-h-screen flex items-center justify-center bg-background text-sm text-muted-foreground">{label}</main>
+}
+
+const STATUS_CHIP_CLASSES: Record<OrderStatus, string> = {
+  pending: 'bg-amber-100 text-amber-800',
+  confirmed: 'bg-blue-100 text-blue-800',
+  shipped: 'bg-violet-100 text-violet-800',
+  delivered: 'bg-green-100 text-green-800',
+  cancelled: 'bg-red-100 text-red-700',
+}
+
+function SummaryChip({ label, count, className }: { label: string; count: number; className: string }) {
+  return (
+    <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${className}`}>
+      <span>{label}</span>
+      <span className="font-bold">{count}</span>
+    </span>
+  )
+}
+
+function StatusBadge({ status }: { status: OrderStatus }) {
+  const labels: Record<OrderStatus, string> = {
+    pending: 'Pending',
+    confirmed: 'Confirmed',
+    shipped: 'Shipped',
+    delivered: 'Delivered',
+    cancelled: 'Cancelled',
+  }
+  return <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_CHIP_CLASSES[status]}`}>{labels[status]}</span>
+}
+
+function OrderCard({ order, updating, onStatusChange, onDelete }: { order: AdminOrder; updating: boolean; onStatusChange: (status: OrderStatus) => void; onDelete: () => void }) {
+  const totalQuantity = order.items.reduce((sum, item) => sum + item.quantity, 0)
+  return (
+    <article className="rounded-xl border border-border overflow-hidden bg-card">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 bg-secondary/40">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-mono text-sm font-semibold text-foreground">#{order.id.slice(0, 6).toUpperCase()}</span>
+            <StatusBadge status={order.status} />
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">{formatOrderDate(order.createdAt)}</p>
+        </div>
+        <div className="text-right">
+          <p className="text-xl font-bold text-primary">{formatMoney(order.total)}</p>
+          <p className="text-xs text-muted-foreground">{totalQuantity} item{totalQuantity === 1 ? '' : 's'} · {order.items.length} line{order.items.length === 1 ? '' : 's'}</p>
+        </div>
+      </div>
+
+      <div className="p-4 space-y-3">
+        <p className="flex flex-wrap items-center gap-x-2 text-sm font-medium text-foreground">
+          <User size={15} className="text-muted-foreground shrink-0" />
+          <span>{order.name}</span>
+          {order.phone && <a href={`tel:${order.phone.replace(/[^0-9+]/g, '')}`} className="text-primary hover:underline">{order.phone}</a>}
+        </p>
+        <p className="flex items-start gap-2 text-sm text-foreground">
+          <MapPin size={15} className="text-muted-foreground shrink-0" />
+          <span className="min-w-0 flex-1 leading-snug">{order.address}</span>
+        </p>
+        {order.notes && (
+          <p className="flex items-start gap-2 text-sm text-muted-foreground">
+            <MessageCircle size={15} className="shrink-0" />
+            <span className="min-w-0 flex-1 leading-snug">Notes: {order.notes}</span>
+          </p>
+        )}
+
+        <ul className="rounded-lg border border-border bg-background text-sm divide-y divide-border">
+          {order.items.map((item, index) => (
+            <li key={`${order.id}-${index}`} className="flex items-baseline justify-between gap-3 px-3 py-2">
+              <span className="min-w-0 flex-1 truncate text-foreground">
+                {item.name}
+                {item.brand && <span className="text-muted-foreground"> · {item.brand}</span>}
+              </span>
+              <span className="text-muted-foreground shrink-0">×{item.quantity}</span>
+              <span className="font-medium text-foreground shrink-0">{formatMoney(item.price * item.quantity)}</span>
+            </li>
+          ))}
+        </ul>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-muted-foreground">Status</span>
+          <select
+            value={order.status}
+            disabled={updating}
+            onChange={(event) => onStatusChange(event.target.value as OrderStatus)}
+            className="rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground"
+          >
+            {ORDER_STATUSES.map((status) => (
+              <option key={status} value={status}>{ORDER_STATUS_LABELS[status]}</option>
+            ))}
+          </select>
+          {updating && <Loader2 size={14} className="animate-spin text-primary" />}
+          <button onClick={onDelete} disabled={updating} className="rounded-lg bg-destructive/10 px-3 py-2 text-destructive hover:bg-destructive/20" aria-label={`Delete order ${order.id}`}>
+            <Trash2 size={15} />
+          </button>
+        </div>
+      </div>
+    </article>
+  )
 }

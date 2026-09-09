@@ -68,6 +68,16 @@
   --border: #e8e0eb;
   --input: #f5f1f8;
   --ring: #7d5e9a;
+  /* Brand palette (cream / plum / gold) used across the storefront */
+  --cream: #faf5ef;
+  --cream-dark: #f3ece0;
+  --cream-darker: #e6dccb;
+  --plum: #7d5e9a;
+  --plum-deep: #6b4e83;
+  --gold: #b58a4a;
+  --text-body: #4a3f47;
+  --text-muted: #8b7b94;
+  --font-serif: "Playfair Display", serif;
   --chart-1: #7d5e9a;
   --chart-2: #c58fae;
   --chart-3: #d4a5c4;

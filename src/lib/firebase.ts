@@ -25,10 +25,15 @@ const missingFirebaseVariables = requiredFirebaseVariables.filter(
   (variable) => !process.env[variable]
 );
 
+const isProduction = process.env.NODE_ENV === "production";
+
 export function assertFirebaseConfigured() {
   if (missingFirebaseVariables.length > 0) {
+    const hint = isProduction
+      ? "Add these variables in your hosting provider's environment settings (Vercel: Project → Settings → Environment Variables), then deploy a new build. The build must be created after the variables are added because they are embedded at build time."
+      : "Fill them in the .env.local file in the project root, then fully stop the dev server (Ctrl+C) and run npm run dev again. Restarting is required because environment variables are read when the server starts.";
     throw new Error(
-      `Firebase is not configured. Missing: ${missingFirebaseVariables.join(", ")}.`
+      `Firebase is not configured. Missing: ${missingFirebaseVariables.join(", ")}. ${hint}`
     );
   }
 }
