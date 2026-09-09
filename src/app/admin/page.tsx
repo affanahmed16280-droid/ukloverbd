@@ -373,7 +373,7 @@ export default function AdminPage() {
                   <Field label="Category"><select value={editingProduct.category} onChange={(event) => setEditingProduct({ ...editingProduct, category: event.target.value })} className="input">{PRODUCT_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}</select></Field>
                   <Field label="Badge (optional)"><input value={editingProduct.badge} onChange={(event) => setEditingProduct({ ...editingProduct, badge: event.target.value })} className="input" placeholder="New, Sale, Best Seller" /></Field>
                 </div>
-                <Field label="Image URL"><input type="url" value={editingProduct.image} onChange={(event) => setEditingProduct({ ...editingProduct, image: event.target.value })} className="input" placeholder="https://…" /></Field>
+                <Field label="Image URL or Cloudinary public ID"><input type="text" value={editingProduct.image} onChange={(event) => setEditingProduct({ ...editingProduct, image: event.target.value })} className="input" placeholder="https://… or folder/image-public-id" /></Field>
                 <Field label="Or upload a replacement"><input type="file" accept="image/*" onChange={(event) => setImageFile(event.target.files?.[0] ?? null)} className="input file:mr-3 file:border-0 file:bg-secondary file:px-3 file:py-1 file:text-sm" /></Field>
                 {editingProduct.image && <img src={cloudinaryUrl(editingProduct.image, 320, 320)} alt="Product preview" className="h-40 w-40 rounded-xl object-cover" />}
                 {imageFile && <p className="text-sm text-muted-foreground">Selected image: {imageFile.name}</p>}
