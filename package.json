@@ -13,7 +13,10 @@
     "add-samples": "node --env-file=.env.local scripts/simple-import.mjs",
     "batch-upload": "node --env-file=.env.local scripts/batch-upload.mjs",
     "test-cloudinary": "node --env-file=.env.local scripts/test-cloudinary-credentials.mjs",
-    "set-admin": "node scripts/set-admin.mjs"
+    "set-admin": "node scripts/set-admin.mjs",
+    "env:list": "node scripts/print-env.mjs",
+    "env:check": "node scripts/print-env.mjs --check",
+    "env:clip": "node scripts/print-env.mjs --clip"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
