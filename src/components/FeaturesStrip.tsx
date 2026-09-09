@@ -4,7 +4,7 @@ const features = [
   {
     icon: Truck,
     title: "Free Dhaka delivery",
-    description: "Over ৳5,000",
+    description: "Over 5,000",
   },
   {
     icon: ShieldCheck,

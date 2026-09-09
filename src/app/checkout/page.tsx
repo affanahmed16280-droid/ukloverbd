@@ -256,7 +256,7 @@ export default function CheckoutPage() {
                       </>
                     ) : (
                       <>
-                        Place Order · ৳{total.toLocaleString()}
+                        Place Order · {total.toLocaleString()}
                       </>
                     )}
                   </button>
@@ -313,7 +313,7 @@ export default function CheckoutPage() {
                             </p>
                           </div>
                           <p className="text-sm font-bold text-gray-900 flex-shrink-0">
-                            ৳{(item.price * item.quantity).toLocaleString()}
+                            {(item.price * item.quantity).toLocaleString()}
                           </p>
                         </div>
                       ))}
@@ -322,7 +322,7 @@ export default function CheckoutPage() {
                     <div className="border-t border-gray-100 pt-4 space-y-2">
                       <div className="flex justify-between text-sm text-gray-500">
                         <span>Subtotal</span>
-                        <span>৳{total.toLocaleString()}</span>
+                        <span>{total.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between text-sm text-gray-500">
                         <span>Delivery</span>
@@ -332,7 +332,7 @@ export default function CheckoutPage() {
                       </div>
                       <div className="flex justify-between text-base font-bold text-gray-900 pt-2 border-t border-gray-100">
                         <span>Total</span>
-                        <span>৳{total.toLocaleString()}</span>
+                        <span>{total.toLocaleString()}</span>
                       </div>
                     </div>
                   </>

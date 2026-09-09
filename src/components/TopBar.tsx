@@ -16,7 +16,7 @@ export default function TopBar() {
           {/* Center */}
           <div className="hidden md:block font-bold tracking-widest uppercase text-[10px]"
             style={{ color: "var(--plum)" }}>
-            FREE DELIVERY IN DHAKA ON ORDERS OVER ৳5,000
+            FREE DELIVERY IN DHAKA ON ORDERS OVER 5,000
           </div>
         </div>
       </div>

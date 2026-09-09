@@ -12,6 +12,7 @@ import {
   Star,
   Phone,
   MessageCircle,
+  X,
 } from 'lucide-react'
 import { getStoreProducts, type Product } from '@/lib/products'
 import { PRODUCT_CATEGORIES, productMatchesCategory } from '@/lib/categories'
@@ -206,7 +207,7 @@ export default function Page() {
             </a>
           </div>
           <div className="font-medium">
-            FREE DELIVERY IN DHAKA ON ORDERS OVER ৳5,000
+            FREE DELIVERY IN DHAKA ON ORDERS OVER 5,000
           </div>
         </div>
       </div>
@@ -279,7 +280,6 @@ export default function Page() {
               <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.24em] text-white/75">{slide.eyebrow}</p>
               <h1 className="max-w-xl text-4xl leading-[1.05] tracking-[-0.04em] sm:text-6xl">{slide.title}</h1>
               <p className="mt-5 max-w-md text-sm leading-6 text-white/80 sm:text-base">{slide.copy}</p>
-              <a href="#products" className="mt-7 inline-flex w-fit items-center gap-2 rounded-full bg-white px-5 py-3 text-xs font-bold text-primary shadow-lg transition-transform hover:-translate-y-0.5">Shop the edit <ArrowRight size={15} /></a>
             </div>
             <div className="sr-only">
               <h1>{slide.title}</h1>
@@ -299,7 +299,7 @@ export default function Page() {
               <span className="inline-flex items-center gap-1 rounded-full border border-accent/30 bg-card/70 px-3 py-1.5 text-[10px] font-semibold text-primary"><Sparkles size={12} className="text-accent" /> 100% Original UK Imports</span>
               <h2 className="mt-5 text-3xl leading-tight text-foreground sm:text-4xl">Curated beauty & skincare.<br /><span className="font-normal text-primary">Direct from the UK.</span></h2>
               <p className="mt-4 max-w-[350px] text-sm leading-6 text-muted-foreground">Discover authentic dermatological skincare, cult cosmetics, and premium haircare imported directly to Bangladesh.</p>
-              <p className="mt-7 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Starts from <strong className="ml-2 text-2xl normal-case tracking-normal text-primary">৳ 1,650</strong></p>
+              <p className="mt-7 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Starts from <strong className="ml-2 text-2xl normal-case tracking-normal text-primary">1,650</strong></p>
             </div>
             <img src={referenceAsset('/_next/static/immutable/media/hero_card_img1.0u_ojkaqn9byt.png', 640)} alt="Woman enjoying her skincare routine" className="absolute bottom-0 right-0 h-[88%] w-[38%] object-cover object-top mix-blend-multiply sm:h-[96%] sm:w-[42%]" />
           </div>
@@ -375,7 +375,7 @@ export default function Page() {
                 </div>
                 <p className="mt-4 text-[10px] font-bold uppercase tracking-wider text-accent">{product.brand}</p>
                 <h3 className="mt-1 text-sm font-semibold text-foreground sm:text-base">{product.name}</h3>
-                <div className="mt-2 flex items-center justify-between"><p className="text-sm font-semibold text-primary">{product.price > 0 ? `৳${product.price.toLocaleString()}` : 'Price on request'}</p><span className="flex items-center gap-1 text-[11px] text-muted-foreground"><Star size={12} className="fill-accent text-accent" /> 4.8</span></div>
+                <div className="mt-2 flex items-center justify-between"><p className="text-sm font-semibold text-primary">{product.price > 0 ? `${product.price.toLocaleString()}` : 'Price on request'}</p><span className="flex items-center gap-1 text-[11px] text-muted-foreground"><Star size={12} className="fill-accent text-accent" /> 4.8</span></div>
               </article>
             )
           })}</div>}
@@ -425,7 +425,7 @@ export default function Page() {
               <h3 className="text-lg font-bold text-foreground mb-4">Business Info</h3>
               <div className="space-y-2 text-sm text-muted-foreground">
                 <p>✅ 100% Original UK Products</p>
-                <p>🚚 Free Delivery over ৳5,000</p>
+                <p>🚚 Free Delivery over 5,000</p>
                 <p>💯 Authentic Brands Only</p>
                 <p>⏰ Quick Delivery in Dhaka</p>
               </div>

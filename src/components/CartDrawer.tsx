@@ -161,7 +161,7 @@ export default function CartDrawer() {
                     className="text-xs font-semibold"
                     style={{ color: "var(--gold)", fontFamily: "var(--font-sans)" }}
                   >
-                    ৳{(item.price * item.quantity).toLocaleString()}
+                    {(item.price * item.quantity).toLocaleString()}
                   </p>
                 </div>
 
@@ -216,7 +216,7 @@ export default function CartDrawer() {
                 className="text-[11px] text-center"
                 style={{ color: "var(--text-muted)", fontFamily: "var(--font-sans)" }}
               >
-                Add ৳{(5000 - total).toLocaleString()} more for free Dhaka delivery
+                Add {(5000 - total).toLocaleString()} more for free Dhaka delivery
               </p>
             )}
             <div className="flex justify-between items-center">
@@ -230,7 +230,7 @@ export default function CartDrawer() {
                 className="text-lg font-bold"
                 style={{ fontFamily: "var(--font-serif)", color: "var(--plum)" }}
               >
-                ৳{total.toLocaleString()}
+                {total.toLocaleString()}
               </span>
             </div>
             <Link

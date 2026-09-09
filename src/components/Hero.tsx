@@ -234,7 +234,7 @@ export default function Hero() {
                   className="text-sm font-bold"
                   style={{ color: "var(--gold)", fontFamily: "var(--font-sans)" }}
                 >
-                  ৳860
+                  860
                 </span>
               </div>
             </div>

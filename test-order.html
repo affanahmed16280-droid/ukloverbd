@@ -160,7 +160,7 @@
 
                 const docRef = await addDoc(collection(db, "orders"), testOrder);
                 resultDiv.className = 'result success';
-                resultDiv.innerHTML = '✅ Test order successfully submitted!<br>Order ID: ' + docRef.id + '<br>Status: pending<br>Items: 1<br>Total: ৳1,850';
+                resultDiv.innerHTML = '✅ Test order successfully submitted!<br>Order ID: ' + docRef.id + '<br>Status: pending<br>Items: 1<br>Total: 1,850';
             } catch (error) {
                 resultDiv.className = 'result error';
                 resultDiv.innerHTML = '❌ Order submission failed: ' + error.message;

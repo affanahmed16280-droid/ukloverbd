@@ -256,7 +256,7 @@ export default function AdminPage() {
 
         <section className="bg-card rounded-2xl border border-border p-6 mb-8">
           <h2 className="text-xl font-semibold">Bulk image upload</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Images are stored in Firebase Storage. New products are saved with a draft price of ৳0.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Images are stored in Firebase Storage. New products are saved with a draft price of 0.</p>
           <label className="mt-5 flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-border p-8 text-center">
             <Upload size={42} className="text-primary" />
             <span className="font-medium">{uploading ? 'Uploading…' : 'Choose product images'}</span>
@@ -276,7 +276,7 @@ export default function AdminPage() {
                   <Field label="Product name"><input value={editingProduct.name} onChange={(event) => setEditingProduct({ ...editingProduct, name: event.target.value })} className="input" required /></Field>
                   <Field label="Brand"><input value={editingProduct.brand} onChange={(event) => setEditingProduct({ ...editingProduct, brand: event.target.value })} className="input" required /></Field>
                   <Field label="Variant"><input value={editingProduct.variant} onChange={(event) => setEditingProduct({ ...editingProduct, variant: event.target.value })} className="input" /></Field>
-                  <Field label="Price (৳)"><input type="number" min="0" step="1" value={editingProduct.price} onChange={(event) => setEditingProduct({ ...editingProduct, price: event.target.value })} className="input" required /></Field>
+                  <Field label="Price"><input type="number" min="0" step="1" value={editingProduct.price} onChange={(event) => setEditingProduct({ ...editingProduct, price: event.target.value })} className="input" required /></Field>
                   <Field label="Category"><select value={editingProduct.category} onChange={(event) => setEditingProduct({ ...editingProduct, category: event.target.value })} className="input">{PRODUCT_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}</select></Field>
                   <Field label="Badge (optional)"><input value={editingProduct.badge} onChange={(event) => setEditingProduct({ ...editingProduct, badge: event.target.value })} className="input" placeholder="New, Sale, Best Seller" /></Field>
                 </div>
@@ -297,7 +297,7 @@ export default function AdminPage() {
               {products.map((product) => (
                 <article key={product.id} className="rounded-xl border border-border p-4">
                   <img src={cloudinaryUrl(product.image, 400, 400)} alt={product.name} className="mb-3 aspect-square w-full rounded-lg object-cover bg-secondary" />
-                  <h3 className="font-semibold text-foreground truncate">{product.name}</h3><p className="text-sm text-muted-foreground">{product.brand}</p><p className="mt-1 font-bold text-primary">{product.price > 0 ? `৳${product.price.toLocaleString()}` : 'Price on request'}</p><p className="mt-1 text-xs text-muted-foreground">{product.category}</p>
+                  <h3 className="font-semibold text-foreground truncate">{product.name}</h3><p className="text-sm text-muted-foreground">{product.brand}</p><p className="mt-1 font-bold text-primary">{product.price > 0 ? `${product.price.toLocaleString()}` : 'Price on request'}</p><p className="mt-1 text-xs text-muted-foreground">{product.category}</p>
                   <div className="mt-4 flex gap-2"><button onClick={() => { setEditingProduct(draftFromProduct(product)); setImageFile(null) }} className="secondary-button flex-1"><Edit2 size={15} /> Edit</button><button onClick={() => void handleDeleteProduct(product.id)} className="rounded-lg bg-destructive/10 px-3 text-destructive hover:bg-destructive/20" aria-label={`Delete ${product.name}`}><Trash2 size={16} /></button></div>
                 </article>
               ))}

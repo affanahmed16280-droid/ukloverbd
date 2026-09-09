@@ -127,14 +127,14 @@ export default function ProductCard({ product }: ProductCardProps) {
             className="text-base font-bold"
             style={{ color: "var(--plum)", fontFamily: "var(--font-sans)" }}
           >
-            {product.price > 0 ? `৳${product.price.toLocaleString()}` : "Price on request"}
+            {product.price > 0 ? `${product.price.toLocaleString()}` : "Price on request"}
           </span>
           {product.originalPrice && (
             <span
               className="text-[13px] line-through decoration-[var(--cream-darker)]"
               style={{ color: "var(--text-muted)" }}
             >
-              ৳{product.originalPrice.toLocaleString()}
+              {product.originalPrice.toLocaleString()}
             </span>
           )}
         </div>
