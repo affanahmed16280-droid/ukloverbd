@@ -1,8 +1,9 @@
 'use client'
 
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, type CSSProperties } from 'react'
 import {
   ArrowRight,
+  ArrowDownUp,
   ChevronLeft,
   ChevronRight,
   Menu,
@@ -62,6 +63,10 @@ const categories = [
   { name: 'Body & Bath', caption: 'Rituals to unwind', image: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=700&q=85' },
 ]
 
+const sortedProductCategories = [...PRODUCT_CATEGORIES].sort((a, b) =>
+  a.localeCompare(b, undefined, { sensitivity: 'base' }),
+)
+
 export default function Page() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [query, setQuery] = useState('')
@@ -84,7 +89,9 @@ export default function Page() {
     
     if (selectedCategory !== 'All Products') {
       if (selectedCategory === 'Offers') {
-        filtered = filtered.filter(product => product.badge && ['Sale', 'Best Seller', 'New'].includes(product.badge))
+        filtered = filtered.filter(product =>
+          product.badge && ['Sale', 'Best Seller', 'New', 'New Arrival'].includes(product.badge),
+        )
       } else {
         filtered = filtered.filter(product => productMatchesCategory(product, selectedCategory))
       }
@@ -212,20 +219,20 @@ export default function Page() {
         </div>
       </div>
 
-      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/95 backdrop-blur-md">
+      <header className="animate-header-reveal sticky top-0 z-40 border-b border-border/70 bg-background/95 backdrop-blur-md">
         <div className="mx-auto flex h-[74px] max-w-[1250px] items-center justify-between px-5 lg:px-8">
-          <a href="#top" className="flex items-center" aria-label="UK Brand Lover home">
+          <a href="#top" className="flex items-center transition-transform duration-300 hover:scale-[1.03]" aria-label="UK Brand Lover home">
             <img src={referenceAsset('/_next/static/immutable/media/Web Logo.20rlswvxrsbzd.png', 640)} alt="UK Brand Lover Logo" className="h-12 w-auto object-contain" />
           </a>
 
           <nav className="hidden items-center gap-9 text-sm font-medium text-foreground/80 md:flex" aria-label="Primary navigation">
-            <a className="transition-colors hover:text-primary" href="#top">Home</a>
-            <a className="transition-colors hover:text-primary" href="#shop">Shop</a>
-            <a className="transition-colors hover:text-primary" href="#contact">Contact</a>
+            <a className="nav-link-pop" href="#top">Home</a>
+            <a className="nav-link-pop" href="#shop">Shop</a>
+            <a className="nav-link-pop" href="#contact">Contact</a>
           </nav>
 
           <div className="hidden items-center gap-5 md:flex">
-            <label className="flex h-9 w-[255px] items-center gap-2 rounded-full border border-border bg-secondary/30 px-4 text-muted-foreground focus-within:border-primary/50">
+            <label className="flex h-9 w-[255px] items-center gap-2 rounded-full border border-border bg-secondary/30 px-4 text-muted-foreground transition-all duration-300 focus-within:scale-[1.02] focus-within:border-primary/50 focus-within:bg-card">
               <Search size={16} aria-hidden="true" />
               <span className="sr-only">Search beauty products</span>
               <input 
@@ -239,7 +246,7 @@ export default function Page() {
             <button 
               type="button" 
               onClick={() => cartStore.openCart()}
-              className="flex items-center gap-2 text-sm font-medium" 
+              className="flex items-center gap-2 rounded-full px-2 py-1 text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 hover:bg-secondary/60 hover:text-primary"
               aria-label={`Shopping cart with ${count} item`}
             >
               <ShoppingBag size={19} strokeWidth={1.8} />
@@ -318,12 +325,19 @@ export default function Page() {
         <section id="shop" className="mt-20 scroll-mt-28">
           <div className="flex items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">Find your ritual</p><h2 className="mt-2 text-4xl text-foreground">Shop by category</h2></div><a href="#products" className="hidden items-center gap-2 text-sm font-semibold text-primary sm:flex">View all <ArrowRight size={15} /></a></div>
           <div className="mt-6 flex flex-wrap gap-2">
-            {PRODUCT_CATEGORIES.map((category) => (
+            <button
+              type="button"
+              onClick={() => selectCategory('All Products')}
+              className={`category-pill rounded-full border px-3 py-2 text-xs font-semibold ${selectedCategory === 'All Products' ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-foreground hover:border-primary/50'}`}
+            >
+              All products
+            </button>
+            {sortedProductCategories.map((category) => (
               <button
                 key={category}
                 type="button"
                 onClick={() => selectCategory(category)}
-                className={`rounded-full border px-3 py-2 text-xs font-semibold transition-colors ${selectedCategory === category ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-foreground hover:border-primary/50'}`}
+                className={`category-pill rounded-full border px-3 py-2 text-xs font-semibold ${selectedCategory === category ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-foreground hover:border-primary/50'}`}
               >
                 {category}
               </button>
@@ -343,7 +357,8 @@ export default function Page() {
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <div className="hidden items-center gap-1 text-xs text-muted-foreground sm:flex"><Star size={14} className="fill-accent text-accent" /> 4.8 average rating</div>
-              <label className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground shadow-sm">
+              <label className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10">
+                <ArrowDownUp size={14} className="text-primary" aria-hidden="true" />
                 <span className="text-muted-foreground">Sort by</span>
                 <select value={sortBy} onChange={(event) => setSortBy(event.target.value as typeof sortBy)} className="cursor-pointer bg-transparent pr-1 outline-none">
                   <option value="featured">Featured</option>
@@ -356,12 +371,12 @@ export default function Page() {
             </div>
           </div>
           
-          {productsLoading ? <p className="mt-8 rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">Loading products…</p> : productsError ? <p className="mt-8 rounded-2xl border border-dashed border-destructive/30 p-8 text-center text-sm text-destructive">{productsError}</p> : filteredProducts.length === 0 ? <p className="mt-8 rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">No beauty finds match your search yet.</p> : <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-5">{filteredProducts.map((product) => {
+          {productsLoading ? <p className="mt-8 rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">Loading products…</p> : productsError ? <p className="mt-8 rounded-2xl border border-dashed border-destructive/30 p-8 text-center text-sm text-destructive">{productsError}</p> : filteredProducts.length === 0 ? <p className="mt-8 rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">No beauty finds match your search yet.</p> : <div className="mt-7 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-5">{filteredProducts.map((product, index) => {
             const imageUrl = getImageUrl(product.image)
             
             return (
-              <article key={product.id} className="group">
-                <div className="relative aspect-square overflow-hidden rounded-[20px] bg-secondary">
+              <article key={product.id} className="product-card group" style={{ '--card-delay': `${Math.min(index, 9) * 45}ms` } as CSSProperties}>
+                <div className="relative aspect-square overflow-hidden rounded-[20px] bg-secondary shadow-[0_8px_22px_rgba(80,58,94,0.06)] transition-shadow duration-300 group-hover:shadow-[0_18px_32px_rgba(80,58,94,0.16)]">
                   <img 
                     src={imageUrl} 
                     alt={product.name} 
@@ -375,7 +390,7 @@ export default function Page() {
                 </div>
                 <p className="mt-4 text-[10px] font-bold uppercase tracking-wider text-accent">{product.brand}</p>
                 <h3 className="mt-1 text-sm font-semibold text-foreground sm:text-base">{product.name}</h3>
-                <div className="mt-2 flex items-center justify-between"><p className="text-sm font-semibold text-primary">{product.price > 0 ? `${product.price.toLocaleString()}` : 'Price on request'}</p><span className="flex items-center gap-1 text-[11px] text-muted-foreground"><Star size={12} className="fill-accent text-accent" /> 4.8</span></div>
+                <div className="mt-2 flex items-center justify-between gap-2"><div className="flex min-w-0 items-center gap-2"><p className="text-sm font-semibold text-primary">{product.price > 0 ? `${product.price.toLocaleString()}` : 'Price on request'}</p>{product.originalPrice && product.originalPrice > product.price ? <span className="text-[11px] text-muted-foreground line-through">{product.originalPrice.toLocaleString()}</span> : null}</div><span className="flex shrink-0 items-center gap-1 text-[11px] text-muted-foreground"><Star size={12} className="fill-accent text-accent" /> 4.8</span></div>
               </article>
             )
           })}</div>}
