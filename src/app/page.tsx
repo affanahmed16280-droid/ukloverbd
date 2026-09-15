@@ -200,6 +200,7 @@ export default function Page() {
 
   return (
     <main className="min-h-screen bg-background smooth-scroll">
+      <div className="sticky top-0 z-50">
       {/* Top Bar */}
       <div className="bg-primary text-primary-foreground py-2">
         <div className="mx-auto max-w-[1250px] px-5 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
@@ -219,7 +220,7 @@ export default function Page() {
         </div>
       </div>
 
-      <header className="animate-header-reveal sticky top-0 z-40 border-b border-border/70 bg-background/95 backdrop-blur-md">
+      <header className="animate-header-reveal relative z-10 border-b border-border/70 bg-background/95 backdrop-blur-md">
         <div className="mx-auto flex h-[74px] max-w-[1250px] items-center justify-between px-5 lg:px-8">
           <a href="#top" className="flex items-center transition-transform duration-300 hover:scale-[1.03]" aria-label="UK Brand Lover home">
             <img src={referenceAsset('/_next/static/immutable/media/Web Logo.20rlswvxrsbzd.png', 640)} alt="UK Brand Lover Logo" className="h-12 w-auto object-contain" />
@@ -277,6 +278,7 @@ export default function Page() {
           </div>
         )}
       </header>
+      </div>
 
       <div id="top" className="mx-auto max-w-[1250px] px-5 pb-20 pt-8 lg:px-8 lg:pt-9">
         <section className="relative overflow-hidden rounded-[28px] border border-border bg-secondary shadow-[0_14px_50px_rgba(125,94,154,0.10)]">
@@ -343,9 +345,6 @@ export default function Page() {
               </button>
             ))}
           </div>
-          <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-5">
-            {categories.map((category) => <button type="button" onClick={() => selectCategory(category.name)} key={category.name} className="group relative aspect-[0.9] overflow-hidden rounded-[22px] bg-secondary text-left"><img src={category.image} alt={`${category.name} category`} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" /><div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/70 to-transparent p-4 pt-12 text-primary-foreground"><p className="text-lg font-semibold">{category.name}</p><p className="mt-1 text-xs text-primary-foreground/75">{category.caption}</p></div></button>)}
-          </div>
         </section>
 
         <section id="products" className="mt-20 scroll-mt-28">
@@ -380,13 +379,13 @@ export default function Page() {
                   <img 
                     src={imageUrl} 
                     alt={product.name} 
-                    className="h-full w-full object-cover mix-blend-multiply transition-transform duration-500 group-hover:scale-105"
+                    className="h-full w-full object-cover mix-blend-multiply transition-transform duration-700 ease-out group-hover:scale-[1.07]"
                     onError={(e) => {
                       console.error('Image failed to load:', imageUrl, 'Product:', product.name)
                       e.currentTarget.src = 'https://via.placeholder.com/400?text=Image+Error'
                     }}
                   />
-                  <button type="button" onClick={() => handleAddToCart(product)} className="absolute bottom-3 right-3 flex h-10 w-10 items-center justify-center rounded-full bg-card text-primary shadow-[0_8px_24px_rgba(42,26,52,0.18)] transition-all hover:-translate-y-0.5 hover:bg-primary hover:text-primary-foreground" aria-label={product.price > 0 ? `Add ${product.name} to cart` : `Ask the price for ${product.name} on WhatsApp`}><ShoppingBag size={16} /></button>
+                  <button type="button" onClick={() => handleAddToCart(product)} className="absolute bottom-3 right-3 flex h-10 w-10 items-center justify-center rounded-full bg-card text-primary shadow-[0_8px_24px_rgba(42,26,52,0.18)] transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_12px_26px_rgba(42,26,52,0.22)] hover:bg-primary hover:text-primary-foreground" aria-label={product.price > 0 ? `Add ${product.name} to cart` : `Ask the price for ${product.name} on WhatsApp`}><ShoppingBag size={16} /></button>
                 </div>
                 <p className="mt-4 text-[10px] font-bold uppercase tracking-wider text-accent">{product.brand}</p>
                 <h3 className="mt-1 text-sm font-semibold text-foreground sm:text-base">{product.name}</h3>
