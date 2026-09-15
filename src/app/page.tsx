@@ -354,7 +354,7 @@ export default function Page() {
               <h2 className="mt-2 text-4xl text-foreground">Loved by our community</h2>
               <p className="mt-2 text-sm text-muted-foreground">{filteredProducts.length} beauty finds, curated for your shelf.</p>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="product-sort-sticky flex flex-wrap items-center gap-3 sm:self-end">
               <div className="hidden items-center gap-1 text-xs text-muted-foreground sm:flex"><Star size={14} className="fill-accent text-accent" /> 4.8 average rating</div>
               <label className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10">
                 <ArrowDownUp size={14} className="text-primary" aria-hidden="true" />

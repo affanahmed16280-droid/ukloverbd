@@ -203,6 +203,24 @@
     transform: translateY(-0.55rem) scale(1.012);
   }
 
+  .product-sort-sticky {
+    position: sticky;
+    top: 6.75rem;
+    z-index: 30;
+    border: 1px solid rgb(232 224 235 / 0.8);
+    border-radius: 999px;
+    background: rgb(250 248 246 / 0.94);
+    box-shadow: 0 8px 22px rgb(73 46 83 / 0.08);
+    backdrop-filter: blur(12px);
+    padding: 0.35rem 0.45rem 0.35rem 0.75rem;
+  }
+
+  @media (max-width: 639px) {
+    .product-sort-sticky {
+      top: 8.25rem;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .animate-header-reveal,
     .product-card {
